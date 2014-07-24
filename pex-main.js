@@ -14,8 +14,10 @@ var color           = require('pex-color');
 var Vec2            = geom.Vec2;
 var Vec3            = geom.Vec3;
 var Sphere          = gen.Sphere;
+var LineBuilder     = gen.LineBuilder;
 var Mesh            = glu.Mesh;
 var SolidColor      = materials.SolidColor;
+var ShowColors      = materials.ShowColors;
 var Diffuse         = materials.Diffuse;
 var PCamera         = glu.PerspectiveCamera;
 var Arcball         = glu.Arcball;
@@ -47,10 +49,12 @@ sys.Window.create({
         center              = new Vec2(this.width/2, this.height/2);
         centerRadius        = this.width * 0.4;
 
+        this.lineBuilder    = new LineBuilder();
+        this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
         this.budMeshes      = generateBuds();
         this.hormoneMeshes  = generateHormones();
         this.mesh           = generateSphereMesh();
-        this.camera         = new PCamera(60, this.width / this.height);
+        this.camera         = new PCamera(120, this.width / this.height);
         this.arcball        = new Arcball(this, this.camera);
     },
 
@@ -86,6 +90,8 @@ sys.Window.create({
             }
             this.mesh.drawInstances(this.camera, [ bud ]);
             buds[i].forEach(function(innerBud) {
+                this.lineBuilder.addLine(bud.position, innerBud, Color.White, Color.Yellow);
+                this.lineMesh.draw(this.camera);
                 bud.position = new Vec3(innerBud.x, innerBud.y, innerBud.z);
                 this.mesh.drawInstances(this.camera, [ bud ]);
             }.bind(this));
@@ -95,7 +101,8 @@ sys.Window.create({
 
 function generateBuds() {
     var budMeshes = [];
-    var numBuds = Math.floor(Math.random() * 4);
+    //var numBuds = Math.floor(Math.random() * 4);
+    var numBuds = 1;
     for(var i=0; i<numBuds; i++) {
         var pos = new Vec3(
             Math.random() - 0.5, 

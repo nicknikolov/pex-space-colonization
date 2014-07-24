@@ -1,0 +1,24 @@
+{
+  "name": "space-colonization",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "brfs": "*",
+    "browser-sync": "*",
+    "browserify": "*",
+    "pex-color": "*",
+    "pex-fx": "*",
+    "pex-gen": "*",
+    "pex-geom": "*",
+    "pex-glu": "*",
+    "pex-gui": "*",
+    "pex-helpers": "*",
+    "pex-materials": "*",
+    "pex-sys": "*",
+    "vinyl-source-stream": "*",
+    "watchify": "*"
+  },
+  "scripts": {
+    "watch": "./lib/watchscript.js"
+  }
+}

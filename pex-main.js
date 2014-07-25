@@ -29,7 +29,7 @@ var deadIterations  = 0;
 var hormoneSize     = 0.05;
 var hormoneDeadZone = 0.2;
 var budSize         = 0.04;
-var growthStep      = 0.5;
+var growthStep      = 0.1;
 var splitChance     = 0.4;
 var margin          = 5;
 var numHormones     = 300;
@@ -106,6 +106,7 @@ sys.Window.create({
 
 
         buds.forEach(function(bud, i) {
+            if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
             this.lineBuilder.reset(); //! say goodbye to unused data
             bud.forEach(function(budSegment, i) {
                 this.mesh.drawInstances(this.camera, [ 
@@ -119,6 +120,11 @@ sys.Window.create({
                                              Color.Yellow); 
                 }
             }.bind(this));
+            if (bud.hormones) {
+                bud.hormones.forEach(function(hormone) {
+                    this.lineBuilder.addLine(bud.lastElement(), hormone.position, bud.color);
+                }.bind(this));
+            }
             this.lineMesh.draw(this.camera);
         }.bind(this));
 
@@ -189,7 +195,7 @@ function iterate(hormones) {
         // We cycle through the hormones but process only
         // alive ones
         if (hormone.state != 0) return;
-        var minDist = 0.5;
+        var minDist = 0.8;
         var minDistTolerance = 0.01;
         var minDistIndices = [];
         // Else we cycle through the buds and see
@@ -239,12 +245,17 @@ function iterate(hormones) {
         budPos.copy(bud.lastElement());
         var avgPos = new Vec3(0,0,0);
         var avgPosCount = 0;
-        hormonesForBud[i].forEach(function(hormone, j) {
+        //50, 23, 1, 04
+        //0, 1, 2, 3
+        hormonesForBud[i].forEach(function(hormoneIndex) {
             // Add the positions of all the hormones
             // attracting this bud in a vector 
-            avgPos.add(hormones[j].position);
+            //avgPos.add(hormones[j].position);
+            console.log(hormoneIndex);
+            avgPos.add(hormones[hormoneIndex].position);
             avgPosCount++;    
         });
+        bud.hormones = hormonesForBud[i].map(function(index) { return hormones[index]; });
 
         // To get the new bud position we find the direction
         // in which the new bud will be, normalize+scale by 
@@ -258,9 +269,9 @@ function iterate(hormones) {
         buds[i].push(nextPos);
         // If God decides to make a new branch we push the 
         // new position in the array
-//        if (Math.random() > (1.0 - splitChance)) {
-//          newBuds.push([nextPos]);
-//        }
+        if (Math.random() > (1.0 - splitChance)) {
+          newBuds.push([nextPos]);
+        }
     });
     newBuds.forEach(function(bud) {
         buds.push(bud);

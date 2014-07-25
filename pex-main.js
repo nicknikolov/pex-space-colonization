@@ -11,6 +11,7 @@ var gen             = require('pex-gen');
 var materials       = require('pex-materials');
 var color           = require('pex-color');
 
+var Time            = sys.Time;
 var Vec2            = geom.Vec2;
 var Vec3            = geom.Vec3;
 var Sphere          = gen.Sphere;
@@ -26,9 +27,9 @@ var Rect            = geom.Rect;
 
 var deadIterations  = 0;
 var hormoneSize     = 0.02;
-var hormoneDeadZone = 0.07;
+var hormoneDeadZone = 0.2;
 var budSize         = 0.04;
-var growthStep      = 0.1;
+var growthStep      = 0.5;
 var splitChance     = 0.4;
 var margin          = 5;
 var numHormones     = 100;
@@ -59,7 +60,7 @@ sys.Window.create({
     },
 
     draw: function() {
-        iterate(this.hormoneMeshes);
+        if (Time.frameNumber % 10 == 0) iterate(this.hormoneMeshes);
         glu.clearColorAndDepth(Color.DarkGrey);
         glu.enableDepthReadAndWrite(true);
         glu.enableAlphaBlending();
@@ -84,20 +85,39 @@ sys.Window.create({
         this.mesh.drawInstances(this.camera, this.hormoneMeshes);
         glu.enableBlending(false);
 
-        this.budMeshes.forEach(function(bud, i) {
-            bud.uniforms = {
-                diffuseColor: Color.fromRGB(100/255, 200/255, 50/255, 0.5)
-            }
-            this.mesh.drawInstances(this.camera, [ bud ]);
-            var lastBudPos = bud.position;
-            buds[i].forEach(function(innerBud) {
-                this.lineBuilder.addLine(lastBudPos, innerBud, Color.White, Color.Yellow);
-                this.lineMesh.draw(this.camera);
-                lastBudPos = innerBud;
-                bud.position = new Vec3(innerBud.x, innerBud.y, innerBud.z);
-                this.mesh.drawInstances(this.camera, [ bud ]);
+        //this.budMeshes.forEach(function(bud, i) {
+        //    bud.uniforms = {
+        //        diffuseColor: Color.fromRGB(100/255, 200/255, 50/255, 0.5)
+        //    }
+        //    this.mesh.drawInstances(this.camera, [ bud ]);
+        //    var lastBudPos = bud.position;
+        //    buds[i].forEach(function(innerBud) {
+        //        this.lineBuilder.addLine(lastBudPos, innerBud, Color.White, Color.Yellow);
+        //        this.lineMesh.draw(this.camera);
+        //        lastBudPos = innerBud;
+        //        bud.position = new Vec3(innerBud.x, innerBud.y, innerBud.z);
+        //        this.mesh.drawInstances(this.camera, [ bud ]);
+        //    }.bind(this));
+        //}.bind(this));
+
+
+        buds.forEach(function(bud, i) {
+            this.lineBuilder.reset(); //! say goodbye to unused data
+            bud.forEach(function(budSegment, i) {
+                this.mesh.drawInstances(this.camera, [ 
+                    {   position:   budSegment,
+                        scale:      new Vec3(0.03, 0.03, 0.03)} 
+                ]);
+                if (i > 0) {
+                    this.lineBuilder.addLine(bud[i], 
+                                             bud[i-1], 
+                                             Color.White, 
+                                             Color.Yellow); 
+                }
             }.bind(this));
+            this.lineMesh.draw(this.camera);
         }.bind(this));
+
     }
 });
 
@@ -132,7 +152,7 @@ function generateHormones() {
         var pos = new Vec3(
             margin + Math.random() * (800 - 2 * margin) - 400,
             margin + Math.random() * (600 - 2 * margin) - 300,
-            geom.randomFloat(-1, 1)
+            0
         );
         
         //if (pos.sub(center).length() > centerRadius) {
@@ -169,22 +189,24 @@ function iterate(hormones) {
         // We cycle through the hormones but process only
         // alive ones
         if (hormone.state != 0) return;
-        var minDist = 1;
-        var minDistTolerance = 0.005;
+        var minDist = 0.5;
+        var minDistTolerance = 0.01;
         var minDistIndices = [];
         // Else we cycle through the buds and see
         // how far away it's from the hormone
         buds.forEach(function(bud, j) {
-            var budPos = new Vec3(); 
-            budPos.copy(bud.lastElement());
-            var hormPos = new Vec3();
-            hormPos.copy(hormone.position);
-            var dist = hormPos.distance(budPos);
+        //    var budPos = new Vec3(); 
+        //    budPos.copy(bud.lastElement());
+        //    var hormPos = new Vec3();
+        //    hormPos.copy(hormone.position);
+        //    var dist = hormPos.distance(budPos);
+            var dist = hormone.position.distance(bud.lastElement());
+
             if (dist < minDist) {
                 if (Math.abs(dist - minDist) < minDistTolerance) {
                     // If close enough and smaller than the tolerance
                     // then I don't understand this part yet
-                    minDistIndices.push(j);
+                    //  minDistIndices.push(j);
                 } else {
                     // If close enough and bigger than the tolerance 
                     // then I don't understand this part yet
@@ -236,9 +258,9 @@ function iterate(hormones) {
         buds[i].push(nextPos);
         // If God decides to make a new branch we push the 
         // new position in the array
-        if (Math.random() > (1.0 - splitChance)) {
-          newBuds.push([nextPos]);
-        }
+//        if (Math.random() > (1.0 - splitChance)) {
+//          newBuds.push([nextPos]);
+//        }
     });
     newBuds.forEach(function(bud) {
         buds.push(bud);

@@ -26,13 +26,13 @@ var Color           = color.Color;
 var Rect            = geom.Rect;
 
 var deadIterations  = 0;
-var hormoneSize     = 0.02;
+var hormoneSize     = 0.05;
 var hormoneDeadZone = 0.2;
 var budSize         = 0.04;
 var growthStep      = 0.5;
 var splitChance     = 0.4;
 var margin          = 5;
-var numHormones     = 100;
+var numHormones     = 300;
 
 var buds            = [];
 var center; 
@@ -47,8 +47,9 @@ sys.Window.create({
     },
 
     init: function() {
-        center              = new Vec2(this.width/2, this.height/2);
-        centerRadius        = this.width * 0.4;
+        //center              = new Vec2(this.width/2, this.height/2);
+        center              = new Vec3(0, 0, 0);
+        centerRadius        = 1;
 
         this.lineBuilder    = new LineBuilder();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
@@ -62,13 +63,16 @@ sys.Window.create({
     draw: function() {
         if (Time.frameNumber % 10 == 0) iterate(this.hormoneMeshes);
         glu.clearColorAndDepth(Color.DarkGrey);
-        glu.enableDepthReadAndWrite(true);
-        glu.enableAlphaBlending();
+        glu.enableDepthReadAndWrite(true, false);
+        this.mesh.drawInstances(this.camera, this.hormoneMeshes);
+        glu.enableAlphaBlending(true);
+        glu.cullFace(true);
         this.hormoneMeshes.forEach(function(hormone) {
             if (hormone.state == 0) {
                 hormone.scale = new Vec3(hormoneDeadZone, hormoneDeadZone, hormoneDeadZone);
                 hormone.uniforms = {
-                    diffuseColor: Color.fromRGB(255/255, 220/255, 220/255, 0.5)
+                    diffuseColor: Color.fromRGB(255/255, 220/255, 220/255, 0.2),
+                    ambientColor: Color.fromRGB(0,0,0,0)
                 }
                 this.mesh.drawInstances(this.camera, [ hormone ]);
                 hormone.uniforms = {
@@ -82,8 +86,8 @@ sys.Window.create({
             }
             hormone.scale = new Vec3(hormoneSize, hormoneSize, hormoneSize);
         }.bind(this));
-        this.mesh.drawInstances(this.camera, this.hormoneMeshes);
         glu.enableBlending(false);
+        glu.enableDepthReadAndWrite(true, true);
 
         //this.budMeshes.forEach(function(bud, i) {
         //    bud.uniforms = {
@@ -129,10 +133,10 @@ function generateBuds() {
         var pos = new Vec3(
             Math.random() - 0.5, 
             Math.random() - 0.5,
-            Math.random() - 0.5
+            0
         );
-        //pos.normalize().scale(centerRadius);
-        //pos.add(center);
+        pos.normalize().scale(centerRadius);
+        pos.add(center);
         buds.push([pos]);
 
         budMeshes.push({
@@ -149,19 +153,15 @@ function generateBuds() {
 function generateHormones() {
     var hormoneMeshes = [];
     for(var i=0; i<numHormones; i++) {
-        var pos = new Vec3(
-            margin + Math.random() * (800 - 2 * margin) - 400,
-            margin + Math.random() * (600 - 2 * margin) - 300,
-            0
-        );
-        
+        var pos = geom.randomVec3(centerRadius).add(center);
+        pos.z = 0;        
         //if (pos.sub(center).length() > centerRadius) {
         //    i--;
         //    continue;
         //}
        
         hormoneMeshes.push({
-            position:   new Vec3(pos.x/400, pos.y/300, pos.z),
+            position:   new Vec3(pos.x, pos.y, pos.z),
             scale:      new Vec3(hormoneSize, hormoneSize, hormoneSize),
             uniforms:   {
                 diffuseColor: Color.fromHSL(1, 1, 0.5)

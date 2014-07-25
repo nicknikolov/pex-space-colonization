@@ -52,7 +52,7 @@ sys.Window.create({
         this.lineBuilder    = new LineBuilder();
         this.buds           = generateBuds(1);
         this.hormones       = generateHormones(numHormones, centerRadius, center);
-        this.camera         = new PCamera(100, this.width / this.height);
+        this.camera         = new PCamera(60, this.width / this.height);
         this.arcball        = new Arcball(this, this.camera);
 
         this.hormoneMesh    = generateSphereMesh();
@@ -118,8 +118,14 @@ sys.Window.create({
 
         
         this.buds.forEach(function(bud, i) {
-        
+       
 
+           if (bud.parent) {
+
+               that.lineBuilder.addLine(bud.position, bud.parent.position, Color.White, Color.Yellow);
+           }               
+
+            
             if (bud.state == 0) {
 
                 aliveBudObjects.push({
@@ -160,30 +166,8 @@ sys.Window.create({
     
         this.budMesh.drawInstances(this.camera, deadBudObjects);
         this.budMesh.drawInstances(this.camera, aliveBudObjects);
+        this.lineMesh.draw(this.camera);
         
-//        buds.forEach(function(bud, i) {
-//            if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
-//            this.lineBuilder.reset(); //! say goodbye to unused data
-//            bud.forEach(function(budSegment, i) {
-//                this.mesh.drawInstances(this.camera, [ 
-//                    {   position:   budSegment,
-//                        scale:      new Vec3(0.03, 0.03, 0.03)} 
-//                ]);
-//                if (i > 0) {
-//                    this.lineBuilder.addLine(bud[i], 
-//                                             bud[i-1], 
-//                                             Color.White, 
-//                                             Color.Yellow); 
-//                }
-//            }.bind(this));
-//            if (bud.hormones) {
-//                bud.hormones.forEach(function(hormone) {
-//                    this.lineBuilder.addLine(bud.lastElement(), hormone.position, bud.color);
-//                }.bind(this));
-//            }
-//            this.lineMesh.draw(this.camera);
-//        }.bind(this));
-
     }
 });
 

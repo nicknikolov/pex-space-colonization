@@ -178,7 +178,7 @@ function generateBuds(numBuds) {
         var pos = new Vec3(
             Math.random() - 0.5, 
             Math.random() - 0.5,
-            0
+            Math.random() - 0.5
         );
 
         pos.normalize().scale(centerRadius);
@@ -197,7 +197,7 @@ function generateHormones(numHormones, centerRadius, center) {
     var hormones = [];
     for(var i=0; i<numHormones; i++) {
         var pos = geom.randomVec3(centerRadius).add(center);
-        pos.z = 0;        
+       // pos.z = 0;        
         if (pos.sub(center).length() > centerRadius) {
             i--;
             continue;

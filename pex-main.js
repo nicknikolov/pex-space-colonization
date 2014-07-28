@@ -63,12 +63,12 @@ sys.Window.create({
 
     draw: function() {
         
-        if (Time.frameNumber % 10 == 0) {
+        if (Time.frameNumber % 40 == 0) {
             this.iterObject = spaceColonIter(this.buds, this.hormones);
         }
 
         if (!this.iterObject) return;
-        
+
         this.hormones   = this.iterObject.hormones;
         this.buds       = this.iterObject.buds;
 
@@ -113,19 +113,25 @@ sys.Window.create({
             }
         });
 
-
-        this.lineBuilder.reset();
-
+        
+        this.lineBuilder.reset(); 
         
         this.buds.forEach(function(bud, i) {
-       
-
-           if (bud.parent) {
-
-               that.lineBuilder.addLine(bud.position, bud.parent.position, Color.White, Color.Yellow);
-           }               
-
+            if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
             
+
+            if (bud.hormones) {
+                bud.hormones.forEach(function(hormone) {
+                    that.lineBuilder.addLine(bud.position, hormone.position, bud.color);
+                });
+            }
+            
+            if (bud.parent) {
+
+                that.lineBuilder.addLine(bud.position, bud.parent.position, Color.White, Color.Yellow);
+            }               
+
+
             if (bud.state == 0) {
 
                 aliveBudObjects.push({
@@ -141,7 +147,7 @@ sys.Window.create({
             else if (bud.state == 1) {
 
                 deadBudObjects.push({
-                    scale:      new Vec3(budSize, budSize, budSize),
+                    scale:      new Vec3(budSize/10, budSize/10, budSize/10),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: Color.fromRGB(100/255, 50/255, 200/255, 1)
@@ -178,7 +184,7 @@ function generateBuds(numBuds) {
         var pos = new Vec3(
             Math.random() - 0.5, 
             Math.random() - 0.5,
-            Math.random() - 0.5
+            Math.random() - 0.
         );
 
         pos.normalize().scale(centerRadius);
@@ -197,7 +203,7 @@ function generateHormones(numHormones, centerRadius, center) {
     var hormones = [];
     for(var i=0; i<numHormones; i++) {
         var pos = geom.randomVec3(centerRadius).add(center);
-       // pos.z = 0;        
+        //pos.z = 0;        
         if (pos.sub(center).length() > centerRadius) {
             i--;
             continue;
@@ -253,11 +259,11 @@ function iterate(buds, hormones) {
     buds.forEach(function(bud, i) {
 
         if (hormonesForBud[i].length == 0) {
-          //  bud.state++;   
+            bud.hormones = [];
             return;
         }
-        if (bud.state > 0) return;
-    
+
+        
         var budPos      = bud.position.clone();
         var avgPos      = new Vec3(0, 0, 0);
         var avgPosCount = 0;
@@ -269,6 +275,8 @@ function iterate(buds, hormones) {
         
         });
 
+        bud.hormones = hormonesForBud[i].map(function(index) { return hormones[index]; });
+        
         avgPos.scale(1/avgPosCount);
         var dir = avgPos.sub(budPos);
         dir.normalize().scale(growthStep);

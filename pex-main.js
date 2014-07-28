@@ -59,17 +59,19 @@ sys.Window.create({
         this.buds           = generateBuds(1);
         this.hormones       = generateHormones(numHormones, centerRadius, center);
         this.camera         = new PCamera(60, this.width / this.height);
-        this.arcball        = new Arcball(this, this.camera);
         this.gui            = new gui.GUI(this);
+        this.arcball        = new Arcball(this, this.camera);
 
         this.hormoneMesh    = generateSphereMesh();
         this.budMesh        = generateSphereMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
         this.res            = 0;
+        this.debug          = false;
         
         this.time = 0.4;
         this.gui.addParam('Frame delay', this, 'time');
         this.gui.addButton('Restart', this, 'restart');
+        this.gui.addParam('Debug', this, 'debug');
     },
 
     draw: function() {
@@ -136,12 +138,14 @@ sys.Window.create({
         
         this.buds.forEach(function(bud, i) {
             if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
-            
 
-            if (bud.hormones) {
-                bud.hormones.forEach(function(hormone) {
-                    that.lineBuilder.addLine(bud.position, hormone.position, bud.color);
-                });
+            if (that.debug) {
+
+                if (bud.hormones) {
+                    bud.hormones.forEach(function(hormone) {
+                        that.lineBuilder.addLine(bud.position, hormone.position, bud.color);
+                    });
+                }
             }
             
             if (bud.parent) {
@@ -240,20 +244,21 @@ function generateSphereMesh() {
     return new Mesh(sphereGeometry, sphereMaterial);
 }
 
-function iterate(buds, hormones) {
-
+function findAttractors(hormones, buds) {
 
     var hormonesForBud = [];
     for(var i=0; i<buds.length; i++) {
         hormonesForBud.push([]);
     }
+
+
     hormones.forEach(function(hormone, i) {
 
         if (hormone.state != 0) return;
 
         var minDist = 0.8;
         var minDistIndex = -1;
-            
+
         buds.forEach(function(bud, j) {
             if (bud.state > 0) return;
             var dubPos = bud.position.clone();
@@ -273,7 +278,53 @@ function iterate(buds, hormones) {
         }
     });
 
+
+    return hormonesForBud;
+}
+
+
+function findAverageVec(hormonesForBud, budPos, hormones, index) {
+
+    var avgPos      = new Vec3(0, 0, 0);
+    var avgPosCount = 0;
+
+    hormonesForBud[index].forEach(function(hormoneIndex) {
+
+        avgPos.add(hormones[hormoneIndex].position);
+        avgPosCount++;
+
+    });
+
+    return {vector: avgPos, count: avgPosCount};
+
+}
+
+function findNextPos(avgVec, budPos) {
+
+    avgVec.vector.scale(1/avgVec.count);
+    var dir = avgVec.vector.sub(budPos);
+    dir.normalize().scale(growthStep);
+    var nextPos = budPos.add(dir);
+
+    return nextPos;
+}
+
+function splitBranch(buds, nextPos) {
     
+    if (Math.random() > (1.0 - splitChance)) {
+        buds.push({
+            state:      0,
+            position:   nextPos,
+            parent:     null
+        });
+    };
+}
+
+function spaceColonIter(oldBuds, oldHormones) {
+    var buds     = oldBuds;
+    var hormones = oldHormones;
+
+    var hormonesForBud = findAttractors(hormones, buds);
     buds.forEach(function(bud, i) {
 
         if (hormonesForBud[i].length == 0) {
@@ -281,56 +332,24 @@ function iterate(buds, hormones) {
             return;
         }
 
-        
         var budPos      = bud.position.clone();
-        var avgPos      = new Vec3(0, 0, 0);
-        var avgPosCount = 0;
-        
-        hormonesForBud[i].forEach(function(hormoneIndex) {
-        
-            avgPos.add(hormones[hormoneIndex].position);
-            avgPosCount++;
-        
-        });
+        var averageVec  = findAverageVec(hormonesForBud, budPos, hormones, i);
+        var nextPos     = findNextPos(averageVec, budPos);
 
         bud.hormones = hormonesForBud[i].map(function(index) { return hormones[index]; });
-        
-        avgPos.scale(1/avgPosCount);
-        var dir = avgPos.sub(budPos);
-        dir.normalize().scale(growthStep);
-        var nextPos = budPos.add(dir);
-        
+
         bud.state++;
-        
         buds.push({
             state:      0,
             position:   nextPos,
             parent:     bud
         });
-
-
-        if (Math.random() > (1.0 - splitChance)) {
-            buds.push({
-                state:      0,
-                position:   nextPos,
-                parent:     null
-            });
-        };
-    });
-
-
-}
-
-    
-function spaceColonIter(buds, hormones) {
-    var newBuds     = buds;
-    var newHormones = hormones;
-
-    iterate(newBuds, newHormones); 
-
+        
+        splitBranch(buds, nextPos);
+   });
     return { 
-       buds:     newBuds,
-       hormones: newHormones 
+       buds:     buds,
+       hormones: hormones 
    }
 }
 

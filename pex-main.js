@@ -45,6 +45,11 @@ sys.Window.create({
         height: 600,
         type:   '3d'
     },
+    
+    restart: function() {
+
+        this.res = 1;
+    },
 
     init: function() {
         center              = new Vec3(0, 0, 0);
@@ -60,17 +65,26 @@ sys.Window.create({
         this.hormoneMesh    = generateSphereMesh();
         this.budMesh        = generateSphereMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
+        this.res            = 0;
         
-        this.time = 0.8;
+        this.time = 0.4;
         this.gui.addParam('Frame delay', this, 'time');
+        this.gui.addButton('Restart', this, 'restart');
     },
 
     draw: function() {
-        
-        if (Time.frameNumber % Math.floor(this.time * 100) == 0) {
+
+        if (Time.frameNumber % Math.floor(this.time * 50) == 0) {
             this.iterObject = spaceColonIter(this.buds, this.hormones);
         }
 
+        if (this.res == 1) {
+            this.buds = generateBuds(1);
+            this.hormones = generateHormones(numHormones, centerRadius, center);
+            this.iterObject = spaceColonIter(this.buds, this.hormones);
+            this.res = 0;
+        }
+        
         if (!this.iterObject) return;
 
         this.hormones   = this.iterObject.hormones;

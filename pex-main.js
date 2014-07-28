@@ -4,6 +4,7 @@ if(!Array.prototype.lastElement) {
     }
 }
 
+var gui             = require('pex-gui');
 var sys             = require('pex-sys');
 var glu             = require('pex-glu');
 var geom            = require('pex-geom');
@@ -54,16 +55,19 @@ sys.Window.create({
         this.hormones       = generateHormones(numHormones, centerRadius, center);
         this.camera         = new PCamera(60, this.width / this.height);
         this.arcball        = new Arcball(this, this.camera);
+        this.gui            = new gui.GUI(this);
 
         this.hormoneMesh    = generateSphereMesh();
         this.budMesh        = generateSphereMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
         
+        this.time = 0.8;
+        this.gui.addParam('Frame delay', this, 'time');
     },
 
     draw: function() {
         
-        if (Time.frameNumber % 40 == 0) {
+        if (Time.frameNumber % Math.floor(this.time * 100) == 0) {
             this.iterObject = spaceColonIter(this.buds, this.hormones);
         }
 
@@ -104,7 +108,7 @@ sys.Window.create({
 
             else if (hormone.state == 1) {
                 deadHormoneObjects.push({
-                    scale:  new Vec3(hormoneSize, hormoneSize, hormoneSize),
+                    scale:  new Vec3(hormoneSize/2, hormoneSize/2, hormoneSize/2),
                     uniforms: {
                         diffuseColor: Color.fromRGB(0/255, 255/255, 255/255, 1)
                     },
@@ -173,7 +177,7 @@ sys.Window.create({
         this.budMesh.drawInstances(this.camera, deadBudObjects);
         this.budMesh.drawInstances(this.camera, aliveBudObjects);
         this.lineMesh.draw(this.camera);
-        
+        this.gui.draw();
     }
 });
 

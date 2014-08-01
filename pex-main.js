@@ -11,8 +11,11 @@ var geom            = require('pex-geom');
 var gen             = require('pex-gen');
 var materials       = require('pex-materials');
 var color           = require('pex-color');
+var helpers         = require('pex-helpers');
 
+var OctreeHelper    = helpers.OctreeHelper;
 var Time            = sys.Time;
+var Octree          = geom.Octree;
 var Vec2            = geom.Vec2;
 var Vec3            = geom.Vec3;
 var Sphere          = gen.Sphere;
@@ -37,7 +40,7 @@ var numHormones     = 300;
 
 var center; 
 var centerRadius;
-
+var octree;
 
 sys.Window.create({
     settings: {
@@ -54,6 +57,8 @@ sys.Window.create({
     init: function() {
         center              = new Vec3(0, 0, 0);
         centerRadius        = 1;
+
+        octree              = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
 
         this.lineBuilder    = new LineBuilder();
         this.buds           = generateBuds(1);
@@ -72,9 +77,20 @@ sys.Window.create({
         this.gui.addParam('Frame delay', this, 'time');
         this.gui.addButton('Restart', this, 'restart');
         this.gui.addParam('Debug', this, 'debug');
+
+
+        this.octreeHelper0 = new OctreeHelper(octree, Color.Green, 0);
+        this.octreeHelper0.z = -0.01;
+        this.octreeHelper1 = new OctreeHelper(octree, Color.Blue, 1);
+        this.octreeHelper1.x = -0.01;
+        this.octreeHelper2 = new OctreeHelper(octree, Color.Red, 2);
+        this.octreeHelper2.x = 0.01;
+        this.octreeHelper3 = new OctreeHelper(octree, Color.White, 3);
+
     },
 
     draw: function() {
+
 
         if (Time.frameNumber % Math.floor(this.time * 50) == 0) {
             this.iterObject = spaceColonIter(this.buds, this.hormones);
@@ -84,6 +100,7 @@ sys.Window.create({
             this.buds = generateBuds(1);
             this.hormones = generateHormones(numHormones, centerRadius, center);
             this.iterObject = spaceColonIter(this.buds, this.hormones);
+            octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
             this.res = 0;
         }
         
@@ -195,7 +212,12 @@ sys.Window.create({
         this.budMesh.drawInstances(this.camera, deadBudObjects);
         this.budMesh.drawInstances(this.camera, aliveBudObjects);
         this.lineMesh.draw(this.camera);
-        this.gui.draw();
+        this.octreeHelper0.draw(this.camera);
+        this.octreeHelper1.draw(this.camera);
+        this.octreeHelper2.draw(this.camera);
+        this.octreeHelper3.draw(this.camera);
+
+       this.gui.draw();
     }
 });
 
@@ -206,7 +228,7 @@ function generateBuds(numBuds) {
         var pos = new Vec3(
             Math.random() - 0.5, 
             Math.random() - 0.5,
-            Math.random() - 0.
+            Math.random() - 0.5
         );
 
         pos.normalize().scale(centerRadius);
@@ -216,6 +238,9 @@ function generateBuds(numBuds) {
             position:  new Vec3(pos.x, pos.y, pos.z),
             parent:     null
         });
+
+        pos.index = i;
+        octree.add(pos);
    }
    
     return buds;
@@ -256,22 +281,34 @@ function findAttractors(hormones, buds) {
 
         if (hormone.state != 0) return;
 
-        var minDist = 0.8;
-        var minDistIndex = -1;
+//        var minDist = 0.8;
+//        var minDistIndex = -1;
+//
+//        buds.forEach(function(bud, j) {
+//            if (bud.state > 0) return;
+//            var dist = hormone.position.distance(bud.position);
+//            if (dist < minDist) {
+//                minDist = dist;
+//                minDistIndex = j;
+//            }
+//        });
+//
+//        console.log('min dist index should be: ' + minDistIndex + ' \n ' );
+        
+        minDist = 0.8;
+        minDistIndex = -1;
+        
+        var closestBud = octree.findNearestPoint(hormone.position, minDist);
+        if (closestBud) minDistIndex = closestBud.index;
 
-        buds.forEach(function(bud, j) {
-            if (bud.state > 0) return;
-            var dubPos = bud.position.clone();
-            var dist = hormone.position.distance(bud.position);
-            if (dist < minDist) {
-                minDist = dist;
-                minDistIndex = j;
-            }
-        });
+//        console.log(' but actually is: ' + minDistIndex + ' \n ');
         
         if (minDistIndex == -1) return;
 
+        //console.log(buds[minDistIndex].state);
         hormonesForBud[minDistIndex].push(i);
+
+        minDist = hormone.position.distance(closestBud); 
 
         if (minDist < hormoneDeadZone && minDistIndex != -1) {
             hormone.state++;
@@ -310,13 +347,17 @@ function findNextPos(avgVec, budPos) {
 }
 
 function splitBranch(buds, nextPos) {
-    
+   
     if (Math.random() > (1.0 - splitChance)) {
         buds.push({
             state:      0,
             position:   nextPos,
             parent:     null
-        });
+        });    
+        
+        nextPos.index = buds.length - 1;
+        octree.add(nextPos);
+
     };
 }
 
@@ -325,6 +366,7 @@ function spaceColonIter(oldBuds, oldHormones) {
     var hormones = oldHormones;
 
     var hormonesForBud = findAttractors(hormones, buds);
+
     buds.forEach(function(bud, i) {
 
         if (hormonesForBud[i].length == 0) {
@@ -344,7 +386,13 @@ function spaceColonIter(oldBuds, oldHormones) {
             position:   nextPos,
             parent:     bud
         });
-        
+
+        var deadBud = bud.position;
+        deadBud.index = i;
+        octree.remove(deadBud);
+         
+        nextPos.index = buds.length - 1;
+        octree.add(nextPos);        
         splitBranch(buds, nextPos);
    });
     return { 

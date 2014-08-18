@@ -15,7 +15,7 @@ var helpers         = require('pex-helpers');
 
 var OctreeHelper    = helpers.OctreeHelper;
 var Time            = sys.Time;
-var Octree          = geom.Octree;
+var Octree          = require('./geom/Octree.js');
 var Vec2            = geom.Vec2;
 var Vec3            = geom.Vec3;
 var Sphere          = gen.Sphere;
@@ -31,12 +31,12 @@ var Rect            = geom.Rect;
 
 var deadIterations  = 0;
 var hormoneSize     = 0.05;
-var hormoneDeadZone = 0.2;
+var hormoneDeadZone = 0.2 / 5;
 var budSize         = 0.04;
-var growthStep      = 0.1;
+var growthStep      = 0.1 / 5;
 var splitChance     = 0.4;
 var margin          = 5;
-var numHormones     = 300;
+var numHormones     = 1000;
 
 var center; 
 var centerRadius;
@@ -91,16 +91,16 @@ sys.Window.create({
 
     draw: function() {
 
-
-        if (Time.frameNumber % Math.floor(this.time * 50) == 0) {
+        Time.verbose = true;
+        //if (Time.frameNumber % Math.floor(this.time * 10) == 0) {
             this.iterObject = spaceColonIter(this.buds, this.hormones);
-        }
+       // }
 
         if (this.res == 1) {
+            octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
             this.buds = generateBuds(1);
             this.hormones = generateHormones(numHormones, centerRadius, center);
             this.iterObject = spaceColonIter(this.buds, this.hormones);
-            octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
             this.res = 0;
         }
         
@@ -151,10 +151,16 @@ sys.Window.create({
         });
 
         
-        this.lineBuilder.reset(); 
-        
+        this.lineBuilder.reset();
+
+
+        var stateSum = this.buds.reduce(function(sum, bud) {
+         return sum + bud.state;
+        }, 0);
+
         this.buds.forEach(function(bud, i) {
-            if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
+            
+          if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
 
             if (that.debug) {
 
@@ -183,10 +189,11 @@ sys.Window.create({
 
             }
 
-            else if (bud.state == 1) {
-
+        
+            else if (bud.state >= 1) {
+        
                 deadBudObjects.push({
-                    scale:      new Vec3(budSize/10, budSize/10, budSize/10),
+                    scale:      new Vec3(budSize/1, budSize/1, budSize/1),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: Color.fromRGB(100/255, 50/255, 200/255, 1)
@@ -200,16 +207,15 @@ sys.Window.create({
         glu.enableDepthReadAndWrite(true, false);
         glu.enableAlphaBlending(true);
         glu.cullFace(true);
-        this.hormoneMesh.drawInstances(this.camera, deadZoneObjects);
+       // this.hormoneMesh.drawInstances(this.camera, deadZoneObjects);
 
-        
         glu.enableBlending(false);
         glu.enableDepthReadAndWrite(true, true);
 
-        this.hormoneMesh.drawInstances(this.camera, deadHormoneObjects);
-        this.hormoneMesh.drawInstances(this.camera, aliveHormoneObjects);
-    
-        this.budMesh.drawInstances(this.camera, deadBudObjects);
+       // this.hormoneMesh.drawInstances(this.camera, deadHormoneObjects);
+      //  this.hormoneMesh.drawInstances(this.camera, aliveHormoneObjects);
+
+      //  this.budMesh.drawInstances(this.camera, deadBudObjects);
         this.budMesh.drawInstances(this.camera, aliveBudObjects);
         this.lineMesh.draw(this.camera);
         this.octreeHelper0.draw(this.camera);
@@ -228,7 +234,8 @@ function generateBuds(numBuds) {
         var pos = new Vec3(
             Math.random() - 0.5, 
             Math.random() - 0.5,
-            Math.random() - 0.5
+            //Math.random() - 0.5
+            0
         );
 
         pos.normalize().scale(centerRadius);
@@ -250,7 +257,7 @@ function generateHormones(numHormones, centerRadius, center) {
     var hormones = [];
     for(var i=0; i<numHormones; i++) {
         var pos = geom.randomVec3(centerRadius).add(center);
-        //pos.z = 0;        
+        pos.z = 0;        
         if (pos.sub(center).length() > centerRadius) {
             i--;
             continue;
@@ -295,7 +302,7 @@ function findAttractors(hormones, buds) {
 //
 //        console.log('min dist index should be: ' + minDistIndex + ' \n ' );
         
-        minDist = 0.8;
+        minDist = 0.8 / 2;
         minDistIndex = -1;
         
         var closestBud = octree.findNearestPoint(hormone.position, minDist);
@@ -319,6 +326,44 @@ function findAttractors(hormones, buds) {
     return hormonesForBud;
 }
 
+
+function findAttractors2(hormones, buds) {
+
+    var hormonesForBud = [];
+    for(var i=0; i<buds.length; i++) {
+        hormonesForBud.push([]);
+    }
+
+
+    hormones.forEach(function(hormone, i) {
+
+        if (hormone.state != 0) return;
+
+        var minDist = 0.8;
+        var minDistIndex = -1;
+
+        buds.forEach(function(bud, j) {
+            if (bud.state > 0) return;
+            var dubPos = bud.position.clone();
+            var dist = hormone.position.distance(bud.position);
+            if (dist < minDist) {
+                minDist = dist;
+                minDistIndex = j;
+            }
+        });
+        
+        if (minDistIndex == -1) return;
+
+        hormonesForBud[minDistIndex].push(i);
+
+        if (minDist < hormoneDeadZone && minDistIndex != -1) {
+            hormone.state++;
+        }
+    });
+
+
+    return hormonesForBud;
+}
 
 function findAverageVec(hormonesForBud, budPos, hormones, index) {
 
@@ -346,15 +391,29 @@ function findNextPos(avgVec, budPos) {
     return nextPos;
 }
 
+function findNextPosForBranch(avgVec, budPos) {
+
+    avgVec.vector.scale(1/avgVec.count);
+    var dir = avgVec.vector.sub(budPos);
+    dir.normalize().scale(growthStep/2);
+    var x = dir.x;
+    var y = dir.y;
+    dir.x = -y;
+    dir.y = x;
+    var nextPos = budPos.add(dir);
+
+    return nextPos;
+
+}
+
 function splitBranch(buds, nextPos) {
-   
+
     if (Math.random() > (1.0 - splitChance)) {
         buds.push({
             state:      0,
             position:   nextPos,
-            parent:     null
-        });    
-        
+            parent:     buds[buds.length-1]
+        });
         nextPos.index = buds.length - 1;
         octree.add(nextPos);
 
@@ -365,12 +424,17 @@ function spaceColonIter(oldBuds, oldHormones) {
     var buds     = oldBuds;
     var hormones = oldHormones;
 
+    console.time('find attractors');
     var hormonesForBud = findAttractors(hormones, buds);
+    console.timeEnd('find attractors');
 
     buds.forEach(function(bud, i) {
 
         if (hormonesForBud[i].length == 0) {
             bud.hormones = [];
+            bud.index = i;
+            bud.state++;
+            octree.remove(bud);
             return;
         }
 
@@ -390,14 +454,20 @@ function spaceColonIter(oldBuds, oldHormones) {
         var deadBud = bud.position;
         deadBud.index = i;
         octree.remove(deadBud);
-         
+
         nextPos.index = buds.length - 1;
-        octree.add(nextPos);        
-        splitBranch(buds, nextPos);
-   });
-    return { 
+        octree.add(nextPos);
+
+
+        budPos      = bud.position.clone();
+        averageVec  = findAverageVec(hormonesForBud, budPos, hormones, i);
+
+        var branchNextPos = findNextPosForBranch(averageVec, budPos);
+        splitBranch(buds, branchNextPos);
+    });
+    return {
        buds:     buds,
-       hormones: hormones 
+       hormones: hormones
    }
 }
 

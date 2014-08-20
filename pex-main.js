@@ -48,7 +48,7 @@ sys.Window.create({
         height: 600,
         type:   '3d'
     },
-    
+
     restart: function() {
 
         this.res = 1;
@@ -72,7 +72,7 @@ sys.Window.create({
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
         this.res            = 0;
         this.debug          = false;
-        
+
         this.time = 0.4;
         this.gui.addParam('Frame delay', this, 'time');
         this.gui.addButton('Restart', this, 'restart');
@@ -103,7 +103,7 @@ sys.Window.create({
             this.iterObject = spaceColonIter(this.buds, this.hormones);
             this.res = 0;
         }
-        
+
         if (!this.iterObject) return;
 
         this.hormones   = this.iterObject.hormones;
@@ -116,7 +116,7 @@ sys.Window.create({
         var deadBudObjects          = [];
 
         var that = this;
-        
+
         this.hormones.forEach(function(hormone) {
             if (hormone.state == 0) {
 
@@ -125,7 +125,7 @@ sys.Window.create({
                     uniforms:   {
                         diffuseColor: Color.fromRGB(255/255, 220/255, 220/255, 0.2),
                         ambientColor: Color.fromRGB(0,0,0,0)
-                    }, 
+                    },
                     position:   hormone.position
                 });
 
@@ -133,7 +133,7 @@ sys.Window.create({
                     scale:  new Vec3(hormoneSize, hormoneSize, hormoneSize),
                     uniforms: {
                         diffuseColor: Color.fromRGB(255/255, 100/255, 100/255, 1)
-                    }, 
+                    },
                     position: hormone.position
                 });
 
@@ -150,7 +150,7 @@ sys.Window.create({
             }
         });
 
-        
+
         this.lineBuilder.reset();
 
 
@@ -159,7 +159,7 @@ sys.Window.create({
         }, 0);
 
         this.buds.forEach(function(bud, i) {
-            
+
           if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
 
             if (that.debug) {
@@ -170,11 +170,11 @@ sys.Window.create({
                     });
                 }
             }
-            
+
             if (bud.parent) {
 
                 that.lineBuilder.addLine(bud.position, bud.parent.position, Color.White, Color.Yellow);
-            }               
+            }
 
 
             if (bud.state == 0) {
@@ -189,9 +189,9 @@ sys.Window.create({
 
             }
 
-        
+
             else if (bud.state >= 1) {
-        
+
                 deadBudObjects.push({
                     scale:      new Vec3(budSize/1, budSize/1, budSize/1),
                     position:   bud.position,
@@ -249,7 +249,7 @@ function generateBuds(numBuds) {
         pos.index = i;
         octree.add(pos);
    }
-   
+
     return buds;
 }
 
@@ -257,7 +257,7 @@ function generateHormones(numHormones, centerRadius, center) {
     var hormones = [];
     for(var i=0; i<numHormones; i++) {
         var pos = geom.randomVec3(centerRadius).add(center);
-        pos.z = 0;        
+        pos.z = 0;
         if (pos.sub(center).length() > centerRadius) {
             i--;
             continue;
@@ -285,43 +285,22 @@ function findAttractors(hormones, buds) {
 
 
     hormones.forEach(function(hormone, i) {
-
         if (hormone.state != 0) return;
 
-//        var minDist = 0.8;
-//        var minDistIndex = -1;
-//
-//        buds.forEach(function(bud, j) {
-//            if (bud.state > 0) return;
-//            var dist = hormone.position.distance(bud.position);
-//            if (dist < minDist) {
-//                minDist = dist;
-//                minDistIndex = j;
-//            }
-//        });
-//
-//        console.log('min dist index should be: ' + minDistIndex + ' \n ' );
-        
         minDist = 0.8 / 2;
         minDistIndex = -1;
-        
+
         var closestBud = octree.findNearestPoint(hormone.position, minDist);
         if (closestBud) minDistIndex = closestBud.index;
 
-//        console.log(' but actually is: ' + minDistIndex + ' \n ');
-        
         if (minDistIndex == -1) return;
 
-        //console.log(buds[minDistIndex].state);
         hormonesForBud[minDistIndex].push(i);
-
-        minDist = hormone.position.distance(closestBud); 
-
+        minDist = hormone.position.distance(closestBud);
         if (minDist < hormoneDeadZone && minDistIndex != -1) {
             hormone.state++;
         }
     });
-
 
     return hormonesForBud;
 }
@@ -351,7 +330,7 @@ function findAttractors2(hormones, buds) {
                 minDistIndex = j;
             }
         });
-        
+
         if (minDistIndex == -1) return;
 
         hormonesForBud[minDistIndex].push(i);
@@ -424,9 +403,9 @@ function spaceColonIter(oldBuds, oldHormones) {
     var buds     = oldBuds;
     var hormones = oldHormones;
 
-    console.time('find attractors');
-    var hormonesForBud = findAttractors(hormones, buds);
-    console.timeEnd('find attractors');
+  //  console.time('find attractors');
+    var hormonesForBud = findAttractors2(hormones, buds);
+  //  console.timeEnd('find attractors');
 
     buds.forEach(function(bud, i) {
 

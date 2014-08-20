@@ -97,7 +97,7 @@ sys.Window.create({
        // }
 
         if (this.res == 1) {
-            octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
+            //octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
             this.buds = generateBuds(1);
             this.hormones = generateHormones(numHormones, centerRadius, center);
             this.iterObject = spaceColonIter(this.buds, this.hormones);
@@ -116,6 +116,8 @@ sys.Window.create({
         var deadBudObjects          = [];
 
         var that = this;
+
+        octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
 
         this.hormones.forEach(function(hormone) {
             if (hormone.state == 0) {
@@ -178,6 +180,9 @@ sys.Window.create({
 
 
             if (bud.state == 0) {
+                var budPos = bud.position;
+                budPos.index = i;
+                octree.add(budPos);
 
                 aliveBudObjects.push({
                     scale:      new Vec3(budSize, budSize, budSize),
@@ -216,7 +221,7 @@ sys.Window.create({
       //  this.hormoneMesh.drawInstances(this.camera, aliveHormoneObjects);
 
       //  this.budMesh.drawInstances(this.camera, deadBudObjects);
-        this.budMesh.drawInstances(this.camera, aliveBudObjects);
+      //  this.budMesh.drawInstances(this.camera, aliveBudObjects);
         this.lineMesh.draw(this.camera);
         this.octreeHelper0.draw(this.camera);
         this.octreeHelper1.draw(this.camera);
@@ -232,7 +237,7 @@ function generateBuds(numBuds) {
 
     for(var i=0; i<numBuds; i++) {
         var pos = new Vec3(
-            Math.random() - 0.5, 
+            Math.random() - 0.5,
             Math.random() - 0.5,
             //Math.random() - 0.5
             0
@@ -241,7 +246,7 @@ function generateBuds(numBuds) {
         pos.normalize().scale(centerRadius);
         pos.add(center);
         buds.push({
-            state:      0, 
+            state:      0,
             position:  new Vec3(pos.x, pos.y, pos.z),
             parent:     null
         });
@@ -403,9 +408,9 @@ function spaceColonIter(oldBuds, oldHormones) {
     var buds     = oldBuds;
     var hormones = oldHormones;
 
-  //  console.time('find attractors');
-    var hormonesForBud = findAttractors2(hormones, buds);
-  //  console.timeEnd('find attractors');
+    console.time('find attractors');
+    var hormonesForBud = findAttractors(hormones, buds);
+    console.timeEnd('find attractors');
 
     buds.forEach(function(bud, i) {
 
@@ -413,7 +418,7 @@ function spaceColonIter(oldBuds, oldHormones) {
             bud.hormones = [];
             bud.index = i;
             bud.state++;
-            octree.remove(bud);
+         //   octree.remove(bud);
             return;
         }
 
@@ -432,10 +437,10 @@ function spaceColonIter(oldBuds, oldHormones) {
 
         var deadBud = bud.position;
         deadBud.index = i;
-        octree.remove(deadBud);
+        //octree.remove(deadBud);
 
         nextPos.index = buds.length - 1;
-        octree.add(nextPos);
+       // octree.add(nextPos);
 
 
         budPos      = bud.position.clone();

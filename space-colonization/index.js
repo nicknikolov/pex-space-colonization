@@ -49,7 +49,7 @@ SpaceColonization.prototype.generateBuds = function() {
         this.buds.push({
             state:      0,
             position:  new Vec3(pos.x, pos.y, pos.z),
-            parent:     null
+            parentPos:     null
         });
 
         pos.index = i;
@@ -150,7 +150,7 @@ SpaceColonization.prototype.splitBranch = function(nextPos) {
         this.buds.push({
             state:      0,
             position:   nextPos,
-            parent:     this.buds[this.buds.length-1]
+            parentPos:     this.buds[this.buds.length-1].position
         });
         nextPos.index = this.buds.length - 1;
     };
@@ -200,7 +200,7 @@ SpaceColonization.prototype.iterate = function() {
         this.buds.push({
             state:      0,
             position:   nextPos,
-            parent:     bud
+            parentPos:  bud.position
         });
 
         budPos              = bud.position.clone();

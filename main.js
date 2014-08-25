@@ -71,24 +71,9 @@ sys.Window.create({
 
         if (this.budsJson && this.hormonesJson) {
 
-            var that = this;
-            this.buds = this.budsJson.map(function(bud) {
-                var parent = (bud.parent !== -1) ? that.budsJson[bud.parent] : null;
-                return {
-                    position:   bud.position,
-                    state:      bud.state,
-                    parent:     parent,
-                    hormones:   bud.hormones
-                };
-            });
-
-            this.hormones = this.hormonesJson.map(function(hormone) {
-                return {
-                    position:   hormone.position,
-                    state:      hormone.state,
-                };
-            });
-        }
+            this.buds = this.budsJson;
+            this.hormones = this.hormonesJson;
+       }
     },
 
     restart: function() {
@@ -100,29 +85,13 @@ sys.Window.create({
 
     serialize: function() {
 
-        var budsJson = this.buds.map(function(b, i) {
-            return {
-                position: { x: b.position.x, y: b.position.y, z:b.position.z },
-                parent: b.parent ? i : -1,
-                state: b.state,
-                hormones: b.hormones
-            };
-        });
-
-        var hormonesJson = this.hormones.map(function(h) {
-            return {
-                position: { x: h.position.x, y: h.position.y, z: h.position.z},
-                state: h.state
-            };
-        });
-
-        var budsStr = JSON.stringify(budsJson, null, 2);
+        var budsStr = JSON.stringify(this.buds, null, 2);
 
         fs.writeFile(__dirname + '/data/buds.json', budsStr, function(err) {
             if (err) console.log(err);
         });
 
-        var hormonesStr = JSON.stringify(hormonesJson, null, 2);
+        var hormonesStr = JSON.stringify(this.hormones, null, 2);
 
         fs.writeFile(__dirname + '/data/hormones.json', hormonesStr, function(err) {
             if (err) console.log(err);
@@ -197,10 +166,9 @@ sys.Window.create({
                 }
             }
 
-            if (bud.parent) {
-                that.lineBuilder.addLine(bud.position, bud.parent.position, Color.White, Color.Yellow);
+            if (bud.parentPos) {
+                that.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
             }
-
 
             if (bud.state == 0) {
 

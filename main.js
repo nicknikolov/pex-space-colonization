@@ -4,7 +4,7 @@ if(!Array.prototype.lastElement) {
     }
 }
 
-var jsonfile        = require('jsonfile');
+var fs              = require('fs');
 var gui             = require('pex-gui');
 var sys             = require('pex-sys');
 var glu             = require('pex-glu');
@@ -48,8 +48,8 @@ sys.Window.create({
         this.budMesh        = generateSphereMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
 
-        this.budsJson       = jsonfile.readFileSync('data/buds.json', [{'throw': false}]);
-        this.hormonesJson   = jsonfile.readFileSync('data/hormones.json', [{'throw': false}]);
+        this.budsJson       = JSON.parse(fs.readFileSync(__dirname + '/data/buds.json'));
+        this.hormonesJson   = JSON.parse(fs.readFileSync(__dirname + '/data/hormones.json'));
 
         this.debug          = false;
         this.iterate        = true;
@@ -109,10 +109,6 @@ sys.Window.create({
             };
         });
 
-        jsonfile.writeFile('data/buds.json', budsJson, function(err) {
-            if (err) console.log(err);
-        });
-
         var hormonesJson = this.hormones.map(function(h) {
             return {
                 position: { x: h.position.x, y: h.position.y, z: h.position.z},
@@ -120,7 +116,15 @@ sys.Window.create({
             };
         });
 
-        jsonfile.writeFile('data/hormones.json', hormonesJson, function(err) {
+        var budsStr = JSON.stringify(budsJson, null, 2);
+
+        fs.writeFile(__dirname + '/data/buds.json', budsStr, function(err) {
+            if (err) console.log(err);
+        });
+
+        var hormonesStr = JSON.stringify(hormonesJson, null, 2);
+
+        fs.writeFile(__dirname + '/data/hormones.json', hormonesStr, function(err) {
             if (err) console.log(err);
         });
     },

@@ -16,7 +16,6 @@
     "pex-materials": "*",
     "pex-sys": "*",
     "vinyl-source-stream": "0.1.1",
-    "jsonfile": "*",
     "watchify": "1.0.1"
   },
   "scripts": {

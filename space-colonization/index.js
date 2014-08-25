@@ -12,7 +12,7 @@ function SpaceColonization(options) {
     this.growthStep     = options.growthStep    ? options.growthStep    : 0.02;
     this.splitChance    = options.splitChance   ? options.splitChance   : 0.4;
     this.margin         = options.margin        ? options.margin        : 5;
-    this.numHormones    = options.numHormones   ? options.numHormones   : 1000;
+    this.numHormones    = options.numHormones   ? options.numHormones   : 200;
     this.startBuds      = options.startBuds     ? options.splitChance   : 1;
     this.centerR        = options.centerRadius  ? options.centerRadius  : 1;
 

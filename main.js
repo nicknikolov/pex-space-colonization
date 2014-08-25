@@ -48,8 +48,8 @@ sys.Window.create({
         this.budMesh        = generateSphereMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
 
-        this.budsJson       = JSON.parse(fs.readFileSync(__dirname + '/data/buds.json'));
-        this.hormonesJson   = JSON.parse(fs.readFileSync(__dirname + '/data/hormones.json'));
+        this.budsJson       = JSON.parse(fs.readFileSync(__dirname + '/data/buds.json', 'utf8'));
+        this.hormonesJson   = JSON.parse(fs.readFileSync(__dirname + '/data/hormones.json', 'utf8'));
 
         this.debug          = false;
         this.iterate        = true;

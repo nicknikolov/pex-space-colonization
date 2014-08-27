@@ -196,26 +196,29 @@ sys.Window.create({
 
             if (bud.parentPos) {
 
+                var position = new Vec3(bud.position.x, bud.position.y, bud.position.z);
+
                 cubeObjects.push({
                     scale:      new Vec3(that.cubeSize, that.cubeSize, that.cubeSize),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: that.cubeColor,
                     },
-                    rotation:   Quat.fromDirection(bud.parentPos)
+                    rotation:   Quat.fromDirection(position.dup().sub(bud.parentPos))
                 });
 
                 that.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
+
             } else if (prevBud) {
 
-                cubeObjects.push({
-                    scale:      new Vec3(that.cubeSize, that.cubeSize, that.cubeSize),
-                    position:   bud.position,
-                    uniforms:   {
-                        diffuseColor: that.cubeColor,
-                    },
-                    rotation:   Quat.fromDirection(prevBud.position)
-                });
+              //  cubeObjects.push({
+              //      scale:      new Vec3(that.cubeSize, that.cubeSize, that.cubeSize),
+              //      position:   bud.position,
+              //      uniforms:   {
+              //          diffuseColor: that.cubeColor,
+              //      },
+              //      rotation:   Quat.fromDirection(prevBud.position)
+              //  });
 
             }
 

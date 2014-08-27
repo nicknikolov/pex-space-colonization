@@ -1,4 +1,3 @@
-//var Octree  = require('../geom/Octree.js');
 var geom    = require('pex-geom');
 var Octree  = geom.Octree;
 var Vec3    = geom.Vec3;
@@ -7,9 +6,7 @@ function SpaceColonization(options) {
 
     var options         = options               ? options               : {};
     this.type           = options.type          ? options.type          : '2d';
-    this.hSize          = options.hormoneSize   ? options.hormoneSize   : 0.05;
     this.deadZone       = options.deadZone      ? options.deadZone      : 0.04;
-    this.bSize          = options.budSize       ? options.budSize       : 0.04;
     this.growthStep     = options.growthStep    ? options.growthStep    : 0.02;
     this.splitChance    = options.splitChance   ? options.splitChance   : 0.4;
     this.margin         = options.margin        ? options.margin        : 5;

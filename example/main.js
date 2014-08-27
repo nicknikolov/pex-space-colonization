@@ -64,7 +64,9 @@ sys.Window.create({
         this.drawCubes      = true;
         this.treeType       = 0;
         this.cubeSize       = 0.5;
-        this.cubeColor      = Color.create(0.2, 0.2, 0.4, 1),
+        this.cubeColor      = Color.create(0.2, 0.2, 0.4, 1);
+        this.budSize        = 0.04;
+        this.hormoneSize    = 0.05;
 
         this.gui.addLabel('Actions');
         this.gui.addParam('Iterate',                this, 'iterate');
@@ -144,6 +146,7 @@ sys.Window.create({
 
         this.hormones.forEach(function(hormone) {
 
+            var hs = that.hormoneSize;
             if (hormone.state == 0) {
 
                 deadZoneObjects.push({
@@ -156,7 +159,7 @@ sys.Window.create({
                 });
 
                 aliveHormoneObjects.push({
-                    scale:  new Vec3(that.sc.hSize, that.sc.hSize, that.sc.hSize),
+                    scale:  new Vec3(hs, hs, hs),
                     uniforms: {
                         diffuseColor: Color.fromRGB(255/255, 100/255, 100/255, 1)
                     },
@@ -167,7 +170,7 @@ sys.Window.create({
 
             else if (hormone.state == 1) {
                 deadHormoneObjects.push({
-                    scale:  new Vec3(that.sc.hSize/2, that.sc.hSize/2, that.sc.hSize/2),
+                    scale:  new Vec3(hs/2, hs/2, hs/2),
                     uniforms: {
                         diffuseColor: Color.fromRGB(0/255, 255/255, 255/255, 1)
                     },
@@ -184,6 +187,7 @@ sys.Window.create({
         this.buds.forEach(function(bud, i) {
 
             if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
+            var bs = that.budSize;
 
             if (that.debug) {
 
@@ -225,7 +229,7 @@ sys.Window.create({
             if (bud.state == 0) {
 
                 aliveBudObjects.push({
-                    scale:      new Vec3(that.sc.bSize, that.sc.bSize, that.sc.bSize),
+                    scale:      new Vec3(bs, bs, bs),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: Color.fromRGB(100/255, 200/255, 0/255, 1)
@@ -238,7 +242,7 @@ sys.Window.create({
             else if (bud.state == 1) {
 
                 deadBudObjects.push({
-                    scale:      new Vec3(that.sc.bSize/2, that.sc.bSize/2, that.sc.bSize/2),
+                    scale:      new Vec3(bs/2, bs/2, bs/2),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: Color.fromRGB(100/255, 50/255, 200/255, 1)

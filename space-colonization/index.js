@@ -13,7 +13,7 @@ function SpaceColonization(options) {
     this.splitChance    = options.splitChance   ? options.splitChance   : 0.4;
     this.margin         = options.margin        ? options.margin        : 5;
     this.numHormones    = options.numHormones   ? options.numHormones   : 200;
-    this.startBuds      = options.startBuds     ? options.splitChance   : 1;
+    this.startBuds      = options.startBuds     ? options.startBuds     : 1;
     this.centerR        = options.centerRadius  ? options.centerRadius  : 1;
 
     this.octree         = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));

@@ -43,7 +43,7 @@ sys.Window.create({
         this.camera         = new PCamera(80, this.width / this.height);
         this.gui            = new gui.GUI(this);
         this.arcball        = new Arcball(this, this.camera);
-        this.sc             = new SpaceColon({budPosArray: [{x: 0, y: 0, z: 0}]});
+        this.sc             = new SpaceColon();
 
         this.hormoneMesh    = generateSphereMesh();
         this.budMesh        = generateSphereMesh();
@@ -62,6 +62,7 @@ sys.Window.create({
             this.budsJson = null;
         }
 
+        // Bools
         this.debug          = false;
         this.iterate        = true;
         this.drawDeadB      = false;
@@ -71,11 +72,21 @@ sys.Window.create({
         this.drawDeadZone   = false;
         this.drawLines      = true;
         this.drawCubes      = true;
+
+        // Params
         this.treeType       = 0;
         this.cubeSize       = 0.5;
-        this.cubeColor      = Color.create(0.2, 0.2, 0.4, 1);
         this.budSize        = 0.04;
         this.hormoneSize    = 0.05;
+
+        // Colors
+        this.cubeColor      = Color.create(0.2, 0.2, 0.4, 1);
+        this.deadBudColor   = Color.fromRGB(100/255, 50/255, 200/255, 1);
+        this.aliveBudColor  = Color.fromRGB(100/255, 200/255, 0/255, 1);
+        this.deadHormColor  = Color.fromRGB(0/255, 255/255, 255/255, 1);
+        this.aliveHormColor = Color.fromRGB(255/255, 100/255, 100/255, 1);
+        this.deadZoneColor  = Color.fromRGB(255/255, 220/255, 220/255, 0.2);
+        this.ambientColor   = Color.fromRGB(0,0,0,0);
 
         this.gui.addLabel('Actions');
         this.gui.addParam('Iterate',                this, 'iterate');
@@ -161,8 +172,8 @@ sys.Window.create({
                 deadZoneObjects.push({
                     scale:      new Vec3(that.sc.deadZone, that.sc.deadZone, that.sc.deadZone),
                     uniforms:   {
-                        diffuseColor: Color.fromRGB(255/255, 220/255, 220/255, 0.2),
-                        ambientColor: Color.fromRGB(0,0,0,0)
+                        diffuseColor: that.deadZoneColor,
+                        ambientColor: that.ambientColor
                     },
                     position: hormone.position
                 });
@@ -170,7 +181,7 @@ sys.Window.create({
                 aliveHormoneObjects.push({
                     scale:  new Vec3(hs, hs, hs),
                     uniforms: {
-                        diffuseColor: Color.fromRGB(255/255, 100/255, 100/255, 1)
+                        diffuseColor: that.aliveHormColor
                     },
                     position: hormone.position
                 });
@@ -181,7 +192,7 @@ sys.Window.create({
                 deadHormoneObjects.push({
                     scale:  new Vec3(hs/2, hs/2, hs/2),
                     uniforms: {
-                        diffuseColor: Color.fromRGB(0/255, 255/255, 255/255, 1)
+                        diffuseColor: that.deadHormColor
                     },
                     position: hormone.position
                 });
@@ -230,7 +241,7 @@ sys.Window.create({
                     scale:      new Vec3(bs, bs, bs),
                     position:   bud.position,
                     uniforms:   {
-                        diffuseColor: Color.fromRGB(100/255, 200/255, 0/255, 1)
+                        diffuseColor: that.aliveBudColor
                     }
                 });
 
@@ -243,7 +254,7 @@ sys.Window.create({
                     scale:      new Vec3(bs/2, bs/2, bs/2),
                     position:   bud.position,
                     uniforms:   {
-                        diffuseColor: Color.fromRGB(100/255, 50/255, 200/255, 1)
+                        diffuseColor: that.deadBudColor
                     }
                 });
             }

@@ -91,7 +91,7 @@ SpaceColonization.prototype.findAttractors = function() {
         minDist = 0.8 / 2;
         minDistIndex = -1;
 
-        var closestBud = this.octree.findNearestPoint(hormone.position, minDist);
+        var closestBud = this.octree.findNearestPoint(hormone.position, {maxDist: minDist});
         if (closestBud) minDistIndex = closestBud.index;
         if (minDistIndex == -1) continue;
         this.hormonesForBud[minDistIndex].push(i);

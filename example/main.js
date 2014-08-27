@@ -43,7 +43,7 @@ sys.Window.create({
         this.camera         = new PCamera(80, this.width / this.height);
         this.gui            = new gui.GUI(this);
         this.arcball        = new Arcball(this, this.camera);
-        this.sc             = new SpaceColon();
+        this.sc             = new SpaceColon({budPosArray: [{x: 0, y: 0, z: 0}]});
 
         this.hormoneMesh    = generateSphereMesh();
         this.budMesh        = generateSphereMesh();

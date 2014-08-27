@@ -13,6 +13,8 @@ function SpaceColonization(options) {
     this.numHormones    = options.numHormones   ? options.numHormones   : 200;
     this.startBuds      = options.startBuds     ? options.startBuds     : 1;
     this.centerR        = options.centerRadius  ? options.centerRadius  : 1;
+    this.budPosArray    = options.budPosArray   ? options.budPosArray   : null;
+    this.hormPosArray   = options.hormPosArray  ? options.hormPosArray  : null;
 
     this.octree         = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
     this.center         = new Vec3(0, 0, 0);
@@ -32,22 +34,27 @@ SpaceColonization.prototype.restart = function() {
 SpaceColonization.prototype.generateBuds = function() {
 
     this.buds = [];
-    for(var i=0; i<this.startBuds; i++) {
+    var length = this.budPosArray ? this.budPosArray.length : startBuds;
 
-        var pos = new Vec3(
-            Math.random() - 0.5,
-            Math.random() - 0.5,
-            Math.random() - 0.5
-        );
+    for(var i=0; i<length; i++) {
+        if (this.budPosArray) {
+            var pos = new Vec3( this.budPosArray[i].x, this.budPosArray[i].y, this.budPosArray[i].z );
+        } else {
+            var pos = new Vec3(
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+                Math.random() - 0.5
+            );
+            if (this.type === '2d') pos.z = 0;
+            pos.normalize().scale(this.centerR);
+            pos.add(this.center);
 
-        if (this.type === '2d') pos.z = 0;
+        }
 
-        pos.normalize().scale(this.centerR);
-        pos.add(this.center);
         this.buds.push({
             state:      0,
-            position:  new Vec3(pos.x, pos.y, pos.z),
-            parentPos:     null
+            position:   pos,
+            parentPos:  null
         });
 
         pos.index = i;
@@ -60,19 +67,25 @@ SpaceColonization.prototype.generateBuds = function() {
 SpaceColonization.prototype.generateHormones = function() {
 
     this.hormones = [];
-    for(var i=0; i<this.numHormones; i++) {
+    var length = this.hormPosArray ? this.hormPosArray.length : this.numHormones;
 
-        var pos = geom.randomVec3(this.centerR).add(this.center);
-        if (this.type === '2d') pos.z = 0;
+    for(var i=0; i<length; i++) {
+        if (this.hormPosArray) {
+            var pos = new Vec3( this.hormPosArray[i].x, this.hormPosArray[i].y, this.hormPosArray[i].z );
+        } else {
 
-        if (pos.sub(this.center).length() > this.centerR) {
-            i--;
-            continue;
+            var pos = geom.randomVec3(this.centerR).add(this.center);
+            if (this.type === '2d') pos.z = 0;
+
+            if (pos.sub(this.center).length() > this.centerR) {
+                i--;
+                continue;
+            }
         }
 
         this.hormones.push({
             state:      0,
-            position:   new Vec3(pos.x, pos.y, pos.z)
+            position:   pos
         });
     }
 }

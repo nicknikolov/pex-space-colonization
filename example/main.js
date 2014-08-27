@@ -50,8 +50,17 @@ sys.Window.create({
         this.cubeMesh       = generateCubeMesh();
         this.lineMesh       = new Mesh(this.lineBuilder, new ShowColors(), {lines: true});
 
-        this.budsJson       = JSON.parse(fs.readFileSync(__dirname + '/data/buds.json', 'utf8'));
-        this.hormonesJson   = JSON.parse(fs.readFileSync(__dirname + '/data/hormones.json', 'utf8'));
+        try {
+            this.hormonesJson = JSON.parse(fs.readFileSync(__dirname + '/data/hormones.json', 'utf8'));
+        } catch (err) {
+            this.hormonesJson = null;
+        }
+
+        try {
+            this.budsJson = JSON.parse(fs.readFileSync(__dirname + '/data/buds.json', 'utf8'));
+        } catch (err) {
+            this.budsJson = null;
+        }
 
         this.debug          = false;
         this.iterate        = true;

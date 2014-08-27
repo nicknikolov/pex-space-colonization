@@ -182,7 +182,6 @@ sys.Window.create({
 
         this.lineBuilder.reset();
 
-        var prevBud;
 
         this.buds.forEach(function(bud, i) {
 
@@ -213,16 +212,6 @@ sys.Window.create({
 
                 that.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
 
-            } else if (prevBud) {
-
-              //  cubeObjects.push({
-              //      scale:      new Vec3(that.cubeSize, that.cubeSize, that.cubeSize),
-              //      position:   bud.position,
-              //      uniforms:   {
-              //          diffuseColor: that.cubeColor,
-              //      },
-              //      rotation:   Quat.fromDirection(prevBud.position)
-              //  });
 
             }
 
@@ -249,8 +238,6 @@ sys.Window.create({
                     }
                 });
             }
-
-            prevBud = bud;
 
         });
 

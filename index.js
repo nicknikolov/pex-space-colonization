@@ -1,6 +1,5 @@
-var geom    = require('pex-geom');
-var Octree  = geom.Octree;
-var Vec3    = geom.Vec3;
+var geom = require('pex-geom');
+var Vec3 = geom.Vec3;
 
 function SpaceColonization(options) {
 
@@ -16,7 +15,6 @@ function SpaceColonization(options) {
     this.budPosArray    = options.budPosArray   ? options.budPosArray   : null;
     this.hormPosArray   = options.hormPosArray  ? options.hormPosArray  : null;
 
-    this.octree         = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
     this.center         = new Vec3(0, 0, 0);
 
     this.generateBuds();
@@ -25,7 +23,6 @@ function SpaceColonization(options) {
 
 SpaceColonization.prototype.restart = function() {
 
-    this.octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
     this.generateBuds();
     this.generateHormones();
 
@@ -34,20 +31,22 @@ SpaceColonization.prototype.restart = function() {
 SpaceColonization.prototype.generateBuds = function() {
 
     this.buds = [];
-    var length = this.budPosArray ? this.budPosArray.length : startBuds;
+    var length = this.budPosArray ? this.budPosArray.length : this.startBuds;
 
     for(var i=0; i<length; i++) {
         if (this.budPosArray) {
             var pos = new Vec3( this.budPosArray[i].x, this.budPosArray[i].y, this.budPosArray[i].z );
         } else {
-            var pos = new Vec3(
-                Math.random() - 0.5,
-                Math.random() - 0.5,
-                Math.random() - 0.5
-            );
+           // var pos = new Vec3(
+           //     Math.random() - 0.5,
+           //     Math.random() - 0.5,
+           //     Math.random() - 0.5
+           // );
+
+            var pos = geom.randomVec3(this.centerR).add(this.center);
             if (this.type === '2d') pos.z = 0;
-            pos.normalize().scale(this.centerR);
-            pos.add(this.center);
+           // pos.normalize().scale(this.centerR);
+           // pos.add(this.center);
 
         }
 
@@ -56,10 +55,6 @@ SpaceColonization.prototype.generateBuds = function() {
             position:   pos,
             parentPos:  null
         });
-
-        pos.index = i;
-
-        this.octree.add(pos);
    }
 
 }
@@ -104,11 +99,18 @@ SpaceColonization.prototype.findAttractors = function() {
         minDist = 0.8 / 2;
         minDistIndex = -1;
 
-        var closestBud = this.octree.findNearestPoint(hormone.position, {maxDist: minDist});
-        if (closestBud) minDistIndex = closestBud.index;
+        this.buds.forEach(function(bud, j) {
+            if (bud.state > 0) return;
+            var dubPos = bud.position.clone();
+            var dist = hormone.position.distance(bud.position);
+            if (dist < minDist) {
+                minDist = dist;
+                minDistIndex = j;
+            }
+        });
         if (minDistIndex == -1) continue;
+
         this.hormonesForBud[minDistIndex].push(i);
-        minDist = hormone.position.distance(closestBud);
         if (minDist < this.deadZone && minDistIndex != -1) {
             hormone.state++;
         }
@@ -131,7 +133,7 @@ SpaceColonization.prototype.findAverageVec = function(hormonesForBud, index) {
 }
 
 SpaceColonization.prototype.findNextPos = function(avgVec, budPos) {
- 
+
     var dir = avgVec.dup().sub(budPos);
     dir.normalize().scale(this.growthStep);
     var nextPos = budPos.add(dir);
@@ -163,20 +165,6 @@ SpaceColonization.prototype.splitBranch = function(nextPos, parentPos) {
         });
         nextPos.index = this.buds.length - 1;
     };
-}
-
-SpaceColonization.prototype.rebuildOctree = function() {
-
-    this.octree = new Octree(new Vec3(-1, -1, -1), new Vec3(2, 2, 2));
-
-    for (var j=0; j<this.buds.length; j++) {
-        if (this.buds[j].state === 0) {
-            var budPos = this.buds[j].position;
-            budPos.index = j;
-            this.octree.add(budPos);
-        }
-    }
-
 }
 
 SpaceColonization.prototype.iterate = function() {
@@ -213,13 +201,11 @@ SpaceColonization.prototype.iterate = function() {
         });
 
         budPos              = bud.position.clone();
-        //averageVec          = this.findAverageVec(this.hormonesForBud, i);
         var branchNextPos   = this.findNextPosForBranch(averageVec, budPos);
         this.splitBranch(branchNextPos, bud.position);
 
     };
 
-    this.rebuildOctree();
     return {
        buds:        this.buds,
        hormones:    this.hormones

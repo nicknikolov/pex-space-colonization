@@ -75,7 +75,8 @@ sys.Window.create({
 
         // Params
         this.treeType       = 0;
-        this.cubeSize       = 0.2;
+        this.growType       = 0;
+        this.cubeSize       = 0.4;
         this.budSize        = 0.04;
         this.hormoneSize    = 0.05;
 
@@ -96,12 +97,19 @@ sys.Window.create({
         this.gui.addLabel('Generation Config');
         this.gui.addButton('Regenerate', this, 'restart');
         var that = this;
-        var radioList = this.gui.addRadioList('Tree Type', this, 'treeType', [
+        var treeTypeList = this.gui.addRadioList('Tree Type', this, 'treeType', [
             { name: '2D', value: 0 },
             { name: '3D', value: 1 }
         ], function(idx) {
             if (that.treeType === 0) that.sc.type = '2d';
             else that.sc.type = '3d';
+        });
+        var growTypeLit = this.gui.addRadioList('Grow Type', this, 'growType', [
+            {name: "Split", value: 0 },
+            {name: "Straight", value: 1}
+        ], function(idx) {
+            if (that.growType === 0) that.sc.growType = 'split';
+            else that.sc.growType = 'straight';
         });
         this.gui.addLabel('');
         this.gui.addLabel('Drawing Config');
@@ -116,7 +124,9 @@ sys.Window.create({
         this.gui.addParam('Cube Size',              this, 'cubeSize', {min: 0.1, max: 1});
         this.gui.addParam('Cube Color',             this, 'cubeColor');
         this.gui.addParam('View Angle',             this.sc, 'viewAngle', {min: 1, max: 90});
+        this.gui.addParam('Branch Angle',           this.sc, 'branchAngle', {min: 1, max: 45});
 
+        this.gui.onMouseUp(function() { console.log('hi') });
 
         if (this.budsJson && this.hormonesJson) {
             this.buds = this.budsJson;
@@ -135,7 +145,6 @@ sys.Window.create({
         this.deadZoneV3 = new Vec3(this.sc.deadZone, this.sc.deadZone, this.sc.deadZone);
         this.hormSizeV3 = new Vec3(this.hormoneSize, this.hormoneSize, this.hormoneSize);
         this.deadHormSizeV3 = new Vec3(this.hormoneSize/2, this.hormoneSize/2, this.hormoneSize/2);
-        this.cubeSizeV3 = new Vec3(this.cubeSize, this.cubeSize, this.cubeSize);
         this.budSizeV3  = new Vec3(this.budSize, this.budSize, this.budSize);
         this.deadBudSizeV3 = new Vec3(this.budSize/2, this.budSize/2, this.budSize/2);
 
@@ -240,7 +249,7 @@ sys.Window.create({
                 var position = new Vec3(bud.position.x, bud.position.y, bud.position.z);
 
                 this.cubeObjects.push({
-                    scale:      this.cubeSizeV3,
+                    scale:      new Vec3(this.cubeSize, this.cubeSize, this.cubeSize),
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: this.cubeColor,

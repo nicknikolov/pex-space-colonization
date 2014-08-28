@@ -37,17 +37,8 @@ SpaceColonization.prototype.generateBuds = function() {
         if (this.budPosArray) {
             var pos = new Vec3( this.budPosArray[i].x, this.budPosArray[i].y, this.budPosArray[i].z );
         } else {
-           // var pos = new Vec3(
-           //     Math.random() - 0.5,
-           //     Math.random() - 0.5,
-           //     Math.random() - 0.5
-           // );
-
             var pos = geom.randomVec3(this.centerR).add(this.center);
             if (this.type === '2d') pos.z = 0;
-           // pos.normalize().scale(this.centerR);
-           // pos.add(this.center);
-
         }
 
         this.buds.push({

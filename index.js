@@ -16,6 +16,7 @@ function SpaceColonization(options) {
     this.hormPosArray   = options.hormPosArray  ? options.hormPosArray  : null;
 
     this.center         = new Vec3(0, 0, 0);
+    this.hormonesForBud = [];
 
     this.generateBuds();
     this.generateHormones();
@@ -78,8 +79,8 @@ SpaceColonization.prototype.generateHormones = function() {
 
 SpaceColonization.prototype.findAttractors = function() {
 
-    this.hormonesForBud = [];
-    for(var k=0; k<this.buds.length; k++) {
+    this.hormonesForBud.length = 0;
+    for(var k=0, length=this.buds.length; k<length; k++) {
         this.hormonesForBud.push([]);
     }
 
@@ -90,15 +91,17 @@ SpaceColonization.prototype.findAttractors = function() {
         minDist = 0.8 / 2;
         minDistIndex = -1;
 
-        this.buds.forEach(function(bud, j) {
-            if (bud.state > 0) return;
+        for (var j=0, length=this.buds.length; j<length; j++) {
+            var bud = this.buds[j];
+            if (bud.state > 0) continue;
             var dubPos = bud.position.clone();
             var dist = hormone.position.distance(bud.position);
             if (dist < minDist) {
                 minDist = dist;
                 minDistIndex = j;
             }
-        });
+        }
+
         if (minDistIndex == -1) continue;
 
         this.hormonesForBud[minDistIndex].push(i);
@@ -162,17 +165,12 @@ SpaceColonization.prototype.iterate = function() {
 
     this.findAttractors();
 
-    // snapshot of the length because it changes in the loop and breaks
-    // when lookuping hormonesForBud
-    // is this the best way tho ...
-    var buds = this.buds.length;
-
-    for (var i=0; i<buds; i++) {
+    for (var i=0, length=this.buds.length; i<length; i++) {
         var bud = this.buds[i];
         if (bud.state === 1) continue;
 
         if (this.hormonesForBud[i].length == 0) {
-            bud.hormones = [];
+            if (bud.hormones) bud.hormones.length = 0;
             bud.state++;
             continue;
         }

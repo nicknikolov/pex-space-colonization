@@ -5,15 +5,16 @@ function SpaceColonization(options) {
 
     var options         = options               ? options               : {};
     this.type           = options.type          ? options.type          : '2d';
-    this.deadZone       = options.deadZone      ? options.deadZone      : 0.04;
+    this.deadZone       = options.deadZone      ? options.deadZone      : 0.2;
     this.growthStep     = options.growthStep    ? options.growthStep    : 0.02;
     this.splitChance    = options.splitChance   ? options.splitChance   : 0.4;
     this.margin         = options.margin        ? options.margin        : 5;
-    this.numHormones    = options.numHormones   ? options.numHormones   : 200;
+    this.numHormones    = options.numHormones   ? options.numHormones   : 800;
     this.startBuds      = options.startBuds     ? options.startBuds     : 1;
     this.centerR        = options.centerRadius  ? options.centerRadius  : 1;
     this.budPosArray    = options.budPosArray   ? options.budPosArray   : null;
     this.hormPosArray   = options.hormPosArray  ? options.hormPosArray  : null;
+    this.viewAngle      = options.viewAngle     ? options.viewAngle     : 50;
 
     this.center         = new Vec3(0, 0, 0);
     this.hormonesForBud = [];
@@ -24,9 +25,8 @@ function SpaceColonization(options) {
 
 SpaceColonization.prototype.restart = function() {
 
-    this.generateBuds();
     this.generateHormones();
-
+    this.generateBuds();
 }
 
 SpaceColonization.prototype.generateBuds = function() {
@@ -48,7 +48,6 @@ SpaceColonization.prototype.generateBuds = function() {
             parentPos:  null
         });
    }
-
 }
 
 SpaceColonization.prototype.generateHormones = function() {
@@ -88,14 +87,23 @@ SpaceColonization.prototype.findAttractors = function() {
         var hormone = this.hormones[i];
         if (hormone.state != 0) continue;
 
-        minDist = 0.8 / 2;
+        minDist = 0.4;
         minDistIndex = -1;
 
         for (var j=0, length=this.buds.length; j<length; j++) {
             var bud = this.buds[j];
             if (bud.state > 0) continue;
-            var dubPos = bud.position.clone();
             var dist = hormone.position.distance(bud.position);
+            if (bud.position.direction) {
+                var budPosDirNorm = bud.position.direction.clone().normalize();
+                var hormPosNorm = hormone.position.clone().sub(bud.position).normalize();
+                var dot = budPosDirNorm.dot(hormPosNorm);
+                var radians = Math.acos(dot);
+                var degrees = radians * (180/Math.PI);
+                if (degrees > this.viewAngle * 2) {
+                    continue;
+                }
+            }
             if (dist < minDist) {
                 minDist = dist;
                 minDistIndex = j;
@@ -131,7 +139,7 @@ SpaceColonization.prototype.findNextPos = function(avgVec, budPos) {
     var dir = avgVec.dup().sub(budPos);
     dir.normalize().scale(this.growthStep);
     var nextPos = budPos.add(dir);
-
+    nextPos.direction = dir;
     return nextPos;
 }
 
@@ -144,7 +152,7 @@ SpaceColonization.prototype.findNextPosForBranch = function(avgVec, budPos) {
     dir.x = -y;
     dir.y = x;
     var nextPos = budPos.add(dir);
-
+    nextPos.direction = dir;
     return nextPos;
 
 }

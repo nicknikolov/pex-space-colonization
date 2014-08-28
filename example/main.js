@@ -75,7 +75,7 @@ sys.Window.create({
 
         // Params
         this.treeType       = 0;
-        this.cubeSize       = 0.5;
+        this.cubeSize       = 0.2;
         this.budSize        = 0.04;
         this.hormoneSize    = 0.05;
 
@@ -115,6 +115,7 @@ sys.Window.create({
         this.gui.addParam('Draw Cubes',             this, 'drawCubes');
         this.gui.addParam('Cube Size',              this, 'cubeSize', {min: 0.1, max: 1});
         this.gui.addParam('Cube Color',             this, 'cubeColor');
+        this.gui.addParam('View Angle',             this.sc, 'viewAngle', {min: 1, max: 90});
 
 
         if (this.budsJson && this.hormonesJson) {
@@ -230,6 +231,7 @@ sys.Window.create({
                         var hormone = bud.hormones[m];
                         this.lineBuilder.addLine(bud.position, hormone.position, bud.color);
                     };
+                    bud.hormones = [];
                 }
             }
 
@@ -247,7 +249,6 @@ sys.Window.create({
                 });
 
                 this.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
-
 
             }
 
@@ -276,7 +277,6 @@ sys.Window.create({
             }
 
         };
-
 
         glu.clearColorAndDepth(Color.DarkGrey);
         glu.enableDepthReadAndWrite(true, false);

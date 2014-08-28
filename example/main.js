@@ -88,10 +88,10 @@ sys.Window.create({
         this.deadZoneColor  = Color.fromRGB(255/255, 220/255, 220/255, 0.2);
         this.ambientColor   = Color.fromRGB(0,0,0,0);
 
+        // GUI
         this.gui.addLabel('Actions');
         this.gui.addParam('Iterate', this, 'iterate');
         this.gui.addButton('Seralize', this, 'serialize');
-
         this.gui.addLabel('');
         this.gui.addLabel('Generation Config');
         this.gui.addButton('Regenerate', this, 'restart');
@@ -103,7 +103,6 @@ sys.Window.create({
             if (that.treeType === 0) that.sc.type = '2d';
             else that.sc.type = '3d';
         });
-
         this.gui.addLabel('');
         this.gui.addLabel('Drawing Config');
         this.gui.addParam('Debug View',             this, 'debug');
@@ -117,11 +116,13 @@ sys.Window.create({
         this.gui.addParam('Cube Size',              this, 'cubeSize', {min: 0.1, max: 1});
         this.gui.addParam('Cube Color',             this, 'cubeColor');
 
+
         if (this.budsJson && this.hormonesJson) {
             this.buds = this.budsJson;
             this.hormones = this.hormonesJson;
        }
 
+        // Objects to draw
         this.deadZoneObjects         = [];
         this.aliveHormoneObjects     = [];
         this.deadHormoneObjects      = [];
@@ -129,6 +130,13 @@ sys.Window.create({
         this.deadBudObjects          = [];
         this.cubeObjects             = [];
 
+        // Size vectors
+        this.deadZoneV3 = new Vec3(this.sc.deadZone, this.sc.deadZone, this.sc.deadZone);
+        this.hormSizeV3 = new Vec3(this.hormoneSize, this.hormoneSize, this.hormoneSize);
+        this.deadHormSizeV3 = new Vec3(this.hormoneSize/2, this.hormoneSize/2, this.hormoneSize/2);
+        this.cubeSizeV3 = new Vec3(this.cubeSize, this.cubeSize, this.cubeSize);
+        this.budSizeV3  = new Vec3(this.budSize, this.budSize, this.budSize);
+        this.deadBudSizeV3 = new Vec3(this.budSize/2, this.budSize/2, this.budSize/2);
 
     },
 
@@ -172,15 +180,12 @@ sys.Window.create({
         this.cubeObjects.length         = 0;
 
 
-        var that = this;
-
         for (var i=0, length=this.hormones.length; i<length; i++) {
             var hormone = this.hormones[i];
-            var hs = that.hormoneSize;
             if (hormone.state == 0) {
 
                 this.deadZoneObjects.push({
-                    scale:      new Vec3(this.sc.deadZone, this.sc.deadZone, this.sc.deadZone),
+                    scale:      this.deadZoneV3,
                     uniforms:   {
                         diffuseColor: this.deadZoneColor,
                         ambientColor: this.ambientColor
@@ -189,7 +194,7 @@ sys.Window.create({
                 });
 
                 this.aliveHormoneObjects.push({
-                    scale:  new Vec3(hs, hs, hs),
+                    scale:  this.hormSizeV3,
                     uniforms: {
                         diffuseColor: this.aliveHormColor
                     },
@@ -200,7 +205,7 @@ sys.Window.create({
 
             else if (hormone.state == 1) {
                 this.deadHormoneObjects.push({
-                    scale:  new Vec3(hs/2, hs/2, hs/2),
+                    scale:  this.deadHormSizeV3,
                     uniforms: {
                         diffuseColor: this.deadHormColor
                     },
@@ -217,7 +222,6 @@ sys.Window.create({
             var bud = this.buds[i];
 
             if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
-            var bs = this.budSize;
 
             if (this.debug) {
 
@@ -234,7 +238,7 @@ sys.Window.create({
                 var position = new Vec3(bud.position.x, bud.position.y, bud.position.z);
 
                 this.cubeObjects.push({
-                    scale:      new Vec3(this.cubeSize, this.cubeSize, this.cubeSize),
+                    scale:      this.cubeSizeV3,
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: this.cubeColor,
@@ -250,7 +254,7 @@ sys.Window.create({
             if (bud.state == 0) {
 
                 this.aliveBudObjects.push({
-                    scale:      new Vec3(bs, bs, bs),
+                    scale:      this.budSizeV3,
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: this.aliveBudColor
@@ -263,7 +267,7 @@ sys.Window.create({
             else if (bud.state == 1) {
 
                 this.deadBudObjects.push({
-                    scale:      new Vec3(bs/2, bs/2, bs/2),
+                    scale:      this.deadBudSizeV3,
                     position:   bud.position,
                     uniforms:   {
                         diffuseColor: this.deadBudColor

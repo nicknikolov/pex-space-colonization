@@ -89,12 +89,12 @@ sys.Window.create({
         this.ambientColor   = Color.fromRGB(0,0,0,0);
 
         this.gui.addLabel('Actions');
-        this.gui.addParam('Iterate',                this, 'iterate');
-        this.gui.addButton('Seralize',              this, 'serialize');
+        this.gui.addParam('Iterate', this, 'iterate');
+        this.gui.addButton('Seralize', this, 'serialize');
 
         this.gui.addLabel('');
         this.gui.addLabel('Generation Config');
-        this.gui.addButton('Regenerate',            this, 'restart');
+        this.gui.addButton('Regenerate', this, 'restart');
         var that = this;
         var radioList = this.gui.addRadioList('Tree Type', this, 'treeType', [
             { name: '2D', value: 0 },
@@ -121,6 +121,15 @@ sys.Window.create({
             this.buds = this.budsJson;
             this.hormones = this.hormonesJson;
        }
+
+        this.deadZoneObjects         = [];
+        this.aliveHormoneObjects     = [];
+        this.deadHormoneObjects      = [];
+        this.aliveBudObjects         = [];
+        this.deadBudObjects          = [];
+        this.cubeObjects             = [];
+
+
     },
 
     restart: function() {
@@ -155,33 +164,34 @@ sys.Window.create({
             this.hormones   = this.iterObject.hormones;
             this.buds       = this.iterObject.buds;
         }
-        var deadZoneObjects         = [];
-        var aliveHormoneObjects     = [];
-        var deadHormoneObjects      = [];
-        var aliveBudObjects         = [];
-        var deadBudObjects          = [];
-        var cubeObjects             = [];
+        this.deadZoneObjects.length     = 0;
+        this.aliveHormoneObjects.length = 0;
+        this.deadHormoneObjects.length  = 0;
+        this.aliveBudObjects.length     = 0;
+        this.deadBudObjects.length      = 0;
+        this.cubeObjects.length         = 0;
+
 
         var that = this;
 
-        this.hormones.forEach(function(hormone) {
-
+        for (var i=0, length=this.hormones.length; i<length; i++) {
+            var hormone = this.hormones[i];
             var hs = that.hormoneSize;
             if (hormone.state == 0) {
 
-                deadZoneObjects.push({
-                    scale:      new Vec3(that.sc.deadZone, that.sc.deadZone, that.sc.deadZone),
+                this.deadZoneObjects.push({
+                    scale:      new Vec3(this.sc.deadZone, this.sc.deadZone, this.sc.deadZone),
                     uniforms:   {
-                        diffuseColor: that.deadZoneColor,
-                        ambientColor: that.ambientColor
+                        diffuseColor: this.deadZoneColor,
+                        ambientColor: this.ambientColor
                     },
                     position: hormone.position
                 });
 
-                aliveHormoneObjects.push({
+                this.aliveHormoneObjects.push({
                     scale:  new Vec3(hs, hs, hs),
                     uniforms: {
-                        diffuseColor: that.aliveHormColor
+                        diffuseColor: this.aliveHormColor
                     },
                     position: hormone.position
                 });
@@ -189,31 +199,33 @@ sys.Window.create({
             }
 
             else if (hormone.state == 1) {
-                deadHormoneObjects.push({
+                this.deadHormoneObjects.push({
                     scale:  new Vec3(hs/2, hs/2, hs/2),
                     uniforms: {
-                        diffuseColor: that.deadHormColor
+                        diffuseColor: this.deadHormColor
                     },
                     position: hormone.position
                 });
             }
-        });
+        };
 
 
         this.lineBuilder.reset();
 
 
-        this.buds.forEach(function(bud, i) {
+        for (var i=0, length=this.buds.length; i<length; i++) {
+            var bud = this.buds[i];
 
             if (!bud.color) bud.color = Color.fromHSL(Math.random(), 1, 0.5);
-            var bs = that.budSize;
+            var bs = this.budSize;
 
-            if (that.debug) {
+            if (this.debug) {
 
                 if (bud.hormones) {
-                    bud.hormones.forEach(function(hormone) {
-                        that.lineBuilder.addLine(bud.position, hormone.position, bud.color);
-                    });
+                    for (var m=0, length2=bud.hormones.length; m<length2; m++) {
+                        var hormone = bud.hormones[m];
+                        this.lineBuilder.addLine(bud.position, hormone.position, bud.color);
+                    };
                 }
             }
 
@@ -221,27 +233,27 @@ sys.Window.create({
 
                 var position = new Vec3(bud.position.x, bud.position.y, bud.position.z);
 
-                cubeObjects.push({
-                    scale:      new Vec3(that.cubeSize, that.cubeSize, that.cubeSize),
+                this.cubeObjects.push({
+                    scale:      new Vec3(this.cubeSize, this.cubeSize, this.cubeSize),
                     position:   bud.position,
                     uniforms:   {
-                        diffuseColor: that.cubeColor,
+                        diffuseColor: this.cubeColor,
                     },
                     rotation:   Quat.fromDirection(position.dup().sub(bud.parentPos))
                 });
 
-                that.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
+                this.lineBuilder.addLine(bud.position, bud.parentPos, Color.White, Color.Yellow);
 
 
             }
 
             if (bud.state == 0) {
 
-                aliveBudObjects.push({
+                this.aliveBudObjects.push({
                     scale:      new Vec3(bs, bs, bs),
                     position:   bud.position,
                     uniforms:   {
-                        diffuseColor: that.aliveBudColor
+                        diffuseColor: this.aliveBudColor
                     }
                 });
 
@@ -250,33 +262,33 @@ sys.Window.create({
 
             else if (bud.state == 1) {
 
-                deadBudObjects.push({
+                this.deadBudObjects.push({
                     scale:      new Vec3(bs/2, bs/2, bs/2),
                     position:   bud.position,
                     uniforms:   {
-                        diffuseColor: that.deadBudColor
+                        diffuseColor: this.deadBudColor
                     }
                 });
             }
 
-        });
+        };
 
 
         glu.clearColorAndDepth(Color.DarkGrey);
         glu.enableDepthReadAndWrite(true, false);
         glu.enableAlphaBlending(true);
         glu.cullFace(true);
-        if (this.drawDeadZone) this.hormoneMesh.drawInstances(this.camera, deadZoneObjects);
+        if (this.drawDeadZone) this.hormoneMesh.drawInstances(this.camera, this.deadZoneObjects);
 
         glu.enableBlending(false);
         glu.enableDepthReadAndWrite(true, true);
 
-        if (this.drawDeadH) this.hormoneMesh.drawInstances(this.camera, deadHormoneObjects);
-        if (this.drawAliveH) this.hormoneMesh.drawInstances(this.camera, aliveHormoneObjects);
+        if (this.drawDeadH) this.hormoneMesh.drawInstances(this.camera, this.deadHormoneObjects);
+        if (this.drawAliveH) this.hormoneMesh.drawInstances(this.camera, this.aliveHormoneObjects);
 
-        if (this.drawDeadB) this.budMesh.drawInstances(this.camera, deadBudObjects);
-        if (this.drawAliveB) this.budMesh.drawInstances(this.camera, aliveBudObjects);
-        if (this.drawCubes) this.cubeMesh.drawInstances(this.camera, cubeObjects);
+        if (this.drawDeadB) this.budMesh.drawInstances(this.camera, this.deadBudObjects);
+        if (this.drawAliveB) this.budMesh.drawInstances(this.camera, this.aliveBudObjects);
+        if (this.drawCubes) this.cubeMesh.drawInstances(this.camera, this.cubeObjects);
         if (this.drawLines) this.lineMesh.draw(this.camera);
 
         this.gui.draw();

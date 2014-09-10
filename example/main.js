@@ -128,6 +128,10 @@ sys.Window.create({
         this.gui.addParam('Split Chance',           this.sc, 'splitChance', {min: 0, max: 1});
         this.gui.addParam('View Distance',          this.sc, 'viewDistance', {min: 0.1, max: 0.8});
 
+        this.on('keyDown', function(e){
+            if (e.str === 'r') { this.restart() };
+        });
+
         if (this.budsJson && this.hormonesJson) {
             this.buds = this.budsJson;
             this.hormones = this.hormonesJson;

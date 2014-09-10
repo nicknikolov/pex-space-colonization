@@ -125,8 +125,8 @@ sys.Window.create({
         this.gui.addParam('Cube Color',             this, 'cubeColor');
         this.gui.addParam('View Angle',             this.sc, 'viewAngle', {min: 1, max: 90});
         this.gui.addParam('Branch Angle',           this.sc, 'branchAngle', {min: 1, max: 45});
-
-        this.gui.onMouseUp(function() { console.log('hi') });
+        this.gui.addParam('Split Chance',           this.sc, 'splitChance', {min: 0, max: 1});
+        this.gui.addParam('View Distance',          this.sc, 'viewDistance', {min: 0.1, max: 0.8});
 
         if (this.budsJson && this.hormonesJson) {
             this.buds = this.budsJson;

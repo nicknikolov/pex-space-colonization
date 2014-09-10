@@ -155,8 +155,8 @@ SpaceColonization.prototype.findNextPosForBranch = function(budPos) {
 
     var dir = this.avgVec.dup().sub(budPos);
     dir.normalize().scale(this.growthStep);
-    var sinBranchAngle = Math.sin(this.branchAngle * (Math.PI/180));
-    var cosBranchAngle = Math.cos(this.branchAngle * (Math.PI/180));
+    var sinBranchAngle = Math.sin(-this.branchAngle * (Math.PI/180));
+    var cosBranchAngle = Math.cos(-this.branchAngle * (Math.PI/180));
     dir.x = dir.x * cosBranchAngle + dir.y * sinBranchAngle;
     dir.y = -( dir.x * sinBranchAngle) + dir.y * cosBranchAngle;
     var nextPos = budPos.dup().add(dir);

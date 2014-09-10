@@ -17,7 +17,7 @@ function SpaceColonization(options) {
     this.viewAngle      = options.viewAngle     ? options.viewAngle     : 50;
     this.growType       = options.growType      ? options.growType      : 'split';
     this.branchAngle    = options.branchAngle   ? options.branchAngle   : 30;
-
+    this.viewDistance   = options.viewDistance  ? options.viewDistance  : 0.3;
     this.center         = new Vec3(0, 0, 0);
     this.hormonesForBud = [];
 
@@ -89,7 +89,7 @@ SpaceColonization.prototype.findAttractors = function() {
         var hormone = this.hormones[i];
         if (hormone.state != 0) continue;
 
-        minDist = 0.4;
+        minDist = this.viewDistance;
         minDistIndex = -1;
 
         for (var j=0, length=this.buds.length; j<length; j++) {

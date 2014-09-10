@@ -7,7 +7,7 @@ function SpaceColonization(options) {
     this.type           = options.type          ? options.type          : '2d';
     this.deadZone       = options.deadZone      ? options.deadZone      : 0.1;
     this.growthStep     = options.growthStep    ? options.growthStep    : 0.02;
-    this.splitChance    = options.splitChance   ? options.splitChance   : 0.6;
+    this.splitChance    = options.splitChance   ? options.splitChance   : 0.4;
     this.margin         = options.margin        ? options.margin        : 5;
     this.numHormones    = options.numHormones   ? options.numHormones   : 800;
     this.startBuds      = options.startBuds     ? options.startBuds     : 1;
@@ -140,7 +140,7 @@ SpaceColonization.prototype.findNextPos = function(budPos, rotate) {
 
     var dir = this.avgVec.dup().sub(budPos);
     dir.normalize().scale(this.growthStep);
-    if (rotate && this.growType === "split") {
+    if (rotate && this.growType === 'split') {
         var sinBranchAngle = Math.sin(this.branchAngle * (Math.PI/180));
         var cosBranchAngle = Math.cos(this.branchAngle * (Math.PI/180));
         dir.x = dir.x * cosBranchAngle + dir.y * sinBranchAngle;
@@ -159,13 +159,13 @@ SpaceColonization.prototype.findNextPosForBranch = function(budPos) {
     var cosBranchAngle = Math.cos(this.branchAngle * (Math.PI/180));
     dir.x = dir.x * cosBranchAngle + dir.y * sinBranchAngle;
     dir.y = -( dir.x * sinBranchAngle) + dir.y * cosBranchAngle;
-    var nextPos = budPos.add(dir);
+    var nextPos = budPos.dup().add(dir);
     nextPos.direction = dir;
     return nextPos;
 
 }
 
-SpaceColonization.prototype.splitBranch = function(parentPos, nextPos) {
+SpaceColonization.prototype.splitBranch = function(parentPos){
 
     if (Math.random() > (1.0 - this.splitChance)) {
 
@@ -174,7 +174,8 @@ SpaceColonization.prototype.splitBranch = function(parentPos, nextPos) {
         this.buds.push({
             state:      0,
             position:   branchNextPos,
-            parentPos:  parentPos
+            parentPos:  parentPos,
+            split: true
         });
         return true;
 
@@ -197,7 +198,7 @@ SpaceColonization.prototype.iterate = function() {
 
         var budPos = bud.position.clone();
         this.calculateAverageVec(i);
-        var didSplit = this.splitBranch(budPos, nextPos);
+        var didSplit = this.splitBranch(budPos);
         var nextPos = this.findNextPos(budPos, didSplit);
 
         bud.state++;

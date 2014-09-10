@@ -85,8 +85,8 @@ http://algorithmicbotany.org/papers/colonization.egwnp2007.html
 ## Credits
 This code was originally based on the 2d implementation from Marcin Ignac (@vorg).  
 http://marcinignac.com/experiments/space-colonization/
-He contribution to this library has been tremendous.
-The algorithm uses his vector library and the example uses his Pex WebGL library to draw out the result of the algorithm.
+His contribution to this library has been tremendous.
+The algorithm uses Marcin's vector library and the example uses his Pex WebGL library to draw out the result of the algorithm.
 
 
 

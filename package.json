@@ -1,6 +1,6 @@
 {
     "name": "pex-space-colonization",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Space colonization algrotithm for procedurally great tree-like and organic structures",
     "main": "index.js",
     "dependencies": {

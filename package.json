@@ -1,8 +1,27 @@
 {
-    "name": "space-colonization",
-    "version": "0.0.1",
-    "private": true,
+    "name": "pex-space-colonization",
+    "version": "1.0.0",
+    "description": "Space colonization algrotithm for procedurally great tree-like and organic structures",
+    "main": "index.js",
     "dependencies": {
-        "pex-geom": "*"
-    }
+        "pex-geom": "0.3.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/nicknikolov/pex-space-colonization.git"
+    },
+    "homepage": "https://github.com/nicknikolov/pex-space-colonization",
+    "keywords": [
+        "algorithm",
+        "organic",
+        "pex",
+        "space colonization",
+        "procedurall generation",
+        "webgl"
+    ],
+    "author": {
+        "name": "Nick Nikolov",
+        "email": "nick.nikolov.music@gmail.com"
+    },
+    "license": "MIT"
 }

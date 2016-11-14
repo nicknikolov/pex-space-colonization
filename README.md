@@ -1,4 +1,6 @@
 # Space Colonization Algorithm
+
+## DEPRECATED. USE [`space-colonization`](https://github.com/nicknikolov/space-colonization)
 ## Intro
 
 The space colonization algorithm is used to procedurally generate trees, leafs and generally organic structures. This is an implementation for JavaScript and is decoupled from any drawing code. It simply gives you points. You can draw them with Three.js, Pex, in Ascii or not at all - your choice. 
